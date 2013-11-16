@@ -1,9 +1,8 @@
-/* 
- * esh, the Unix shell with Lisp-like syntax. 
+/*
+ * esh, the Unix shell with Lisp-like syntax.
  * Copyright (C) 1999  Ivan Tkatchev
  * This source code is under the GPL.
  */
-
 
 /*
  * A very simple linked-list implementation.
@@ -19,22 +18,22 @@
  *    insertion, and "ls_free" does not free the data in the list.
  *    "ls_free_all" is provided as a convinience -- it will free
  *    the data before deleting the list node.
- *  + "ls_copy" and "ls_free_all" make lots of assumptions about type 
+ *  + "ls_copy" and "ls_free_all" make lots of assumptions about type
  *     information.
  */
 
 #ifndef LIST_H
 #define LIST_H
 
-#define TYPE_STRING   0
-#define TYPE_LIST     1
-#define TYPE_HASH     2
-#define TYPE_BOOL     3
-#define TYPE_FD       4
-#define TYPE_PROC     5
-#define TYPE_VOID     6
+#define TYPE_STRING 0
+#define TYPE_LIST 1
+#define TYPE_HASH 2
+#define TYPE_BOOL 3
+#define TYPE_FD 4
+#define TYPE_PROC 5
+#define TYPE_VOID 6
 
-#define FLAG_NONE     0
+#define FLAG_NONE 0
 
 typedef struct list list;
 
@@ -59,4 +58,3 @@ extern char ls_flag(list* ls);
 extern list* ls_copy(list* ls);
 
 #endif
-

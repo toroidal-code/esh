@@ -1,10 +1,9 @@
 
-/* 
- * esh, the Unix shell with Lisp-like syntax. 
+/*
+ * esh, the Unix shell with Lisp-like syntax.
  * Copyright (C) 1999  Ivan Tkatchev
  * This source code is under the GPL.
  */
-
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -33,8 +32,6 @@
 #include "hash.h"
 #include "job.h"
 #include "builtins.h"
-
-
 
 int shell_terminal_fd = STDIN_FILENO;
 int stderr_handler_fd = STDERR_FILENO;
@@ -116,15 +113,13 @@ int comment(char c) {
 
 int special(char c) {
   if (syntax_special) {
-    if (strchr(syntax_special, c))
-      return 1;
+    if (strchr(syntax_special, c)) return 1;
 
     return 0;
 
-  } else if (openparen(c) || closeparen(c) || separator(c) || 
-	     redirect_in(c) || redirect_out(c) || quote(c) ||
-	     literal(c) || delaysym(c) || comment(c) ||
-	     c == '\0') {
+  } else if (openparen(c) || closeparen(c) || separator(c) || redirect_in(c) ||
+             redirect_out(c) || quote(c) || literal(c) || delaysym(c) ||
+             comment(c) || c == '\0') {
     return 1;
   }
 
@@ -132,21 +127,20 @@ int special(char c) {
 }
 
 char* dynamic_strcpy(char* str) {
-  char* tmp = (char*)gc_alloc(sizeof(char) * (strlen(str) + 1), 
-			      "dynamic_strcpy");
+  char* tmp =
+      (char*)gc_alloc(sizeof(char) * (strlen(str) + 1), "dynamic_strcpy");
 
   strcpy(tmp, str);
 
   return tmp;
 }
 
-
 /*
  * The tokenizer. Useful, but quite limited. It does not detect numerals
- * or list literals. In fact, it only detects strings and special 
- * symbols. 
+ * or list literals. In fact, it only detects strings and special
+ * symbols.
  *
- * List literals are created by the parser, since they could well 
+ * List literals are created by the parser, since they could well
  * have special syntax.
  *
  * Detecting numerals is the job of the individual commands. This is
@@ -169,32 +163,32 @@ char next_token(char* input, int* i, char** token_value, int* len) {
 
     if (ignore) {
       if (foo == '\n' || !foo) {
-	ignore = 0;
+        ignore = 0;
       }
     }
 
     /* Are we currently in a quote? */
     if (!ignore && quote(foo)) {
       if (do_write) {
-	ret = 'a';
-	break;
+        ret = 'a';
+        break;
 
       } else if (!currquote) {
-	currquote = quote(foo);
+        currquote = quote(foo);
 
       } else if (currquote == quote(foo)) {
-	ret = 'a';
-	(*i)++;
-	break;
+        ret = 'a';
+        (*i)++;
+        break;
       }
     }
 
     /* End of input. */
     if (!foo) {
       if (do_write) {
-	ret = 'a';
+        ret = 'a';
       } else {
-	ret = '\0';
+        ret = '\0';
       }
 
       break;
@@ -203,11 +197,11 @@ char next_token(char* input, int* i, char** token_value, int* len) {
     /* Handle comments. */
     if (!ignore && comment(foo) && !currquote) {
       if (do_write) {
-	ret = 'a';
-	break;
+        ret = 'a';
+        break;
 
       } else {
-	ignore = 1;
+        ignore = 1;
       }
     }
 
@@ -217,48 +211,47 @@ char next_token(char* input, int* i, char** token_value, int* len) {
       ret = foo;
       break;
     }
-    
+
     /* Find a word beginning. */
     if (!ignore && !currquote) {
 
       /* It's a letter. */
       if (!blank(foo) && !special(foo)) {
-       char bar;
+        char bar;
 
-       /* Already in a word. */
-       if (do_write) {
-	 /* Nothing. */
+        /* Already in a word. */
+        if (do_write) {
+          /* Nothing. */
 
-       /* Beginning of string. */
-       } else if (!*i) {
-	 do_write = 1;
+          /* Beginning of string. */
+        } else if (!*i) {
+          do_write = 1;
 
-       /* Beginning of word. */
-       } else {
-	 bar = input[(*i)-1];
+          /* Beginning of word. */
+        } else {
+          bar = input[(*i) - 1];
 
-	 if (blank(bar) || special(bar)) do_write = 1;
-       }
+          if (blank(bar) || special(bar)) do_write = 1;
+        }
 
       } else if (do_write) {
-	ret = 'a';
-	break;
+        ret = 'a';
+        break;
       }
     }
 
     (*i)++;
 
     if (do_write || (currquote && currquote != quote(foo))) {
-      if (j == (*len)-2) {
-	char* tmp = (char*)gc_alloc(sizeof(char) * (*len) * 2,
-				    "next_token");
-	
-	(*token_value)[(*len)-1] = '\0';
-	strcpy(tmp, (*token_value));
+      if (j == (*len) - 2) {
+        char* tmp = (char*)gc_alloc(sizeof(char) * (*len) * 2, "next_token");
 
-	gc_free(*token_value);
-	(*token_value) = tmp;
-	(*len) *= 2;
+        (*token_value)[(*len) - 1] = '\0';
+        strcpy(tmp, (*token_value));
+
+        gc_free(*token_value);
+        (*token_value) = tmp;
+        (*len) *= 2;
       }
 
       (*token_value)[j++] = foo;
@@ -269,13 +262,11 @@ char next_token(char* input, int* i, char** token_value, int* len) {
 
   if (!ret && currquote) {
     error("esh: parse error: end of input while looking for "
-	  "a closing quote.");
+          "a closing quote.");
   }
 
   return ret;
 }
-
-
 
 static void ls_strcat_aux(list* ls, char** buff, int* i, int* len) {
   list* iter;
@@ -289,23 +280,22 @@ static void ls_strcat_aux(list* ls, char** buff, int* i, int* len) {
     } else if (ls_type(iter) == TYPE_STRING) {
       foo = strlen(ls_data(iter));
 
-      if ((*i) + foo >= ((*len)-1)) {
-	char* tmp = (char*)gc_alloc(sizeof(char) * (*len + foo) * 2, 
-				    "ls_strcat_aux");
+      if ((*i) + foo >= ((*len) - 1)) {
+        char* tmp =
+            (char*)gc_alloc(sizeof(char) * (*len + foo) * 2, "ls_strcat_aux");
 
-	(*len) = (*len + foo) * 2;
+        (*len) = (*len + foo) * 2;
 
-	strcpy(tmp, (*buff));
-	gc_free((*buff));
-	(*buff) = tmp;
+        strcpy(tmp, (*buff));
+        gc_free((*buff));
+        (*buff) = tmp;
       }
-      
+
       strcat((*buff), ls_data(iter));
       (*i) += foo;
     }
   }
 }
-
 
 char* ls_strcat(list* ls) {
   int i = 0;
@@ -313,12 +303,11 @@ char* ls_strcat(list* ls) {
   char* buff = (char*)gc_alloc(sizeof(char) * len, "ls_strcat");
 
   buff[0] = '\0';
-  
+
   ls_strcat_aux(ls, &buff, &i, &len);
 
   return buff;
 }
-
 
 glob_t* globbify(list* command) {
   glob_t* ret = (glob_t*)gc_alloc(sizeof(glob_t), "globbify");
@@ -344,7 +333,7 @@ glob_t* globbify(list* command) {
   }
 
   for (iter = alias; iter != NULL; iter = ls_next(iter)) {
-    
+
     glob(ls_data(iter), flags, NULL, ret);
 
     flags |= GLOB_APPEND;
@@ -368,10 +357,8 @@ glob_t* globbify(list* command) {
 }
 
 void close_aux(int fd) {
-  if (fd != STDIN_FILENO &&
-      fd != STDOUT_FILENO &&
-      fd != STDERR_FILENO) {
-    
+  if (fd != STDIN_FILENO && fd != STDOUT_FILENO && fd != STDERR_FILENO) {
+
     close(fd);
   }
 }
@@ -382,7 +369,7 @@ void dup2_aux(int old, int new) {
       error("esh: I/O redirection failed.");
       exit(EXIT_FAILURE);
     }
-    
+
     close_aux(old);
   }
 }
@@ -438,7 +425,6 @@ void pipe_aux(int pipes[2]) {
   }
 }
 
-
 int open_read_aux(char* file) {
   int fd = open(file, O_RDONLY);
 
@@ -473,7 +459,6 @@ int open_write_aux(char* file) {
   return fd;
 }
 
-
 char* file_read(int fd) {
   int i = 0;
   int len = 128;
@@ -485,7 +470,7 @@ char* file_read(int fd) {
       break;
     }
 
-    if (i >= len-2) {
+    if (i >= len - 2) {
       char* tmp = (char*)gc_alloc(sizeof(char) * len * 2, "file_read");
 
       len *= 2;
@@ -494,7 +479,7 @@ char* file_read(int fd) {
       gc_free(buff);
       buff = tmp;
     }
-    
+
     buff[i] = foo;
     i++;
   }
@@ -506,7 +491,7 @@ char* file_read(int fd) {
 
 void file_write(int fd, char* data) {
   int i = 0;
-  
+
   while (1) {
     if (!data[i]) break;
 
@@ -530,25 +515,25 @@ void show_status(job_t* job, int stat) {
     error_simple("esh: %s: signalled to stop. (", job->name);
 
     switch (WSTOPSIG(stat)) {
-    case SIGSTOP:
-      error_simple("Stopped");
-      break;
+      case SIGSTOP:
+        error_simple("Stopped");
+        break;
 
-    case SIGTSTP:
-      error_simple("Stopped by user");
-      break;
+      case SIGTSTP:
+        error_simple("Stopped by user");
+        break;
 
-    case SIGTTIN:
-      error_simple("Tried to access terminal input illegaly");
-      break;
+      case SIGTTIN:
+        error_simple("Tried to access terminal input illegaly");
+        break;
 
-    case SIGTTOU:
-      error_simple("Tried to access terminal output illegaly");
-      break;
+      case SIGTTOU:
+        error_simple("Tried to access terminal output illegaly");
+        break;
 
-    default:
-      error_simple("Unknown signal %d", WSTOPSIG(stat));
-      break;
+      default:
+        error_simple("Unknown signal %d", WSTOPSIG(stat));
+        break;
     }
 
     error(")");
@@ -559,59 +544,59 @@ void show_status(job_t* job, int stat) {
     error_simple("esh: %s: signalled to exit. (", job->name);
 
     switch (WTERMSIG(stat)) {
-    case SIGHUP:
-      error_simple("Terminal hung up");
-      break;
+      case SIGHUP:
+        error_simple("Terminal hung up");
+        break;
 
-    case SIGINT:
-      error_simple("Interrupt");
-      break;
+      case SIGINT:
+        error_simple("Interrupt");
+        break;
 
-    case SIGQUIT:
-      error_simple("Quit");
-      break;
+      case SIGQUIT:
+        error_simple("Quit");
+        break;
 
-    case SIGILL:
-      error_simple("Illegal instruction");
-      break;
+      case SIGILL:
+        error_simple("Illegal instruction");
+        break;
 
-    case SIGABRT:
-      error_simple("Aborted");
-      break;
+      case SIGABRT:
+        error_simple("Aborted");
+        break;
 
-    case SIGFPE:
-      error_simple("Floating point exception");
-      break;
+      case SIGFPE:
+        error_simple("Floating point exception");
+        break;
 
-    case SIGKILL:
-      error_simple("Killed");
-      break;
+      case SIGKILL:
+        error_simple("Killed");
+        break;
 
-    case SIGSEGV:
-      error_simple("Segfaulted");
-      break;
+      case SIGSEGV:
+        error_simple("Segfaulted");
+        break;
 
-    case SIGPIPE:
-      error_simple("Broken pipe");
-      break;
+      case SIGPIPE:
+        error_simple("Broken pipe");
+        break;
 
-    case SIGALRM:
-      error_simple("Timer went off");
-      break;
+      case SIGALRM:
+        error_simple("Timer went off");
+        break;
 
-    case SIGTERM:
-      error_simple("Terminated");
-      break;
+      case SIGTERM:
+        error_simple("Terminated");
+        break;
 
-    case SIGBUS:
-      error_simple("Bus error");
-      break;
+      case SIGBUS:
+        error_simple("Bus error");
+        break;
 
-    default:
-      error_simple("Unknown signal %d", WTERMSIG(stat));
-      break;
+      default:
+        error_simple("Unknown signal %d", WTERMSIG(stat));
+        break;
     }
-     
+
     error(")");
   }
 
@@ -619,7 +604,6 @@ void show_status(job_t* job, int stat) {
     error("Core was dumped.");
   }
 }
-
 
 /*
  * The argument is a dummy value so that this function can be used
@@ -641,19 +625,18 @@ void babysit(int signum) {
       if (tmp <= 0) break;
 
       if (tmp == job->last_pid) {
-	show_status(job, stat);
+        show_status(job, stat);
       }
 
       if (job->status == JOB_DEAD) {
-	kill(-job->pgid, SIGPIPE);
-	job->status = JOB_DEAD;
+        kill(-job->pgid, SIGPIPE);
+        job->status = JOB_DEAD;
       }
     }
   }
 
   signal(SIGCHLD, babysit);
 }
-
 
 void job_wait(job_t* job) {
   int tmp;
@@ -669,7 +652,7 @@ void job_wait(job_t* job) {
       kill(-job->pgid, SIGPIPE);
 
       while (waitpid(-job->pgid, &tmp, WUNTRACED) > 0) {
-	/* Nothing. */
+        /* Nothing. */
       }
     }
 
@@ -678,7 +661,6 @@ void job_wait(job_t* job) {
   }
 }
 
-
 void job_foreground(job_t* job) {
 
   if (interactive) {
@@ -686,10 +668,10 @@ void job_foreground(job_t* job) {
 
     if (job->status == JOB_STOPPED) {
       tcsetattr(shell_terminal_fd, TCSADRAIN, &job->terminal_modes);
-    
+
       if (kill(-job->pgid, SIGCONT) < 0) {
-	error("esh: could not continue PGID %d!", job->pgid);
-	return;
+        error("esh: could not continue PGID %d!", job->pgid);
+        return;
       }
 
     } else if (job->status == JOB_DEAD) {
@@ -697,7 +679,7 @@ void job_foreground(job_t* job) {
       return;
     }
   }
-  
+
   job->status = JOB_RUNNING;
 
   job_wait(job);
@@ -708,7 +690,6 @@ void job_foreground(job_t* job) {
     tcsetattr(shell_terminal_fd, TCSADRAIN, &shell_terminal_modes);
   }
 }
-
 
 void job_background(job_t* job) {
 
@@ -728,12 +709,11 @@ void job_background(job_t* job) {
   job->status = JOB_RUNNING;
 }
 
-
 void arrange_funeral(void) {
   list* jnew = NULL;
   list* iter;
   job_t* job;
-  
+
   int foo = 0;
 
   if (!interactive) {
@@ -748,7 +728,7 @@ void arrange_funeral(void) {
 
   for (iter = jobs; iter != NULL; iter = ls_next(iter)) {
     job = ls_data(iter);
-    
+
     if (job->status == JOB_DEAD) foo = 1;
   }
 
@@ -756,7 +736,7 @@ void arrange_funeral(void) {
 
   for (iter = jobs; iter != NULL; iter = ls_next(iter)) {
     job = ls_data(iter);
-    
+
     if (job->status == JOB_DEAD) {
       gc_free(job->name);
       gc_free(job);
@@ -771,14 +751,12 @@ void arrange_funeral(void) {
   jobs = ls_reverse(jnew);
 }
 
-
-
 pid_t do_pipe(int f_src, int f_out, list* ls, int bg, int destructive) {
   pid_t pid, pgid = 0, last_pid = 0, ret = 0;
   int pipes[2];
   int input_src = STDIN_FILENO;
   int output_sink;
-  
+
   glob_t* comm = NULL;
 
   job_t* job = NULL;
@@ -796,7 +774,6 @@ pid_t do_pipe(int f_src, int f_out, list* ls, int bg, int destructive) {
 
   if (ls == NULL) goto done;
 
-  
   for (i = 0; ls != NULL; ls = ls_next(ls), i++) {
 
     if (ls_type(ls) != TYPE_LIST) {
@@ -810,13 +787,12 @@ pid_t do_pipe(int f_src, int f_out, list* ls, int bg, int destructive) {
       error("esh: parse error: tried to execute a null command.");
       goto done;
 
-    } 
+    }
 
     if (!job->name) {
-      job->name = (char*)gc_alloc(sizeof(char) * 
-				(strlen(comm->gl_pathv[0])+1),
-				  "do_pipe");
-    
+      job->name = (char*)gc_alloc(
+          sizeof(char) * (strlen(comm->gl_pathv[0]) + 1), "do_pipe");
+
       strcpy(job->name, comm->gl_pathv[0]);
     }
 
@@ -828,13 +804,11 @@ pid_t do_pipe(int f_src, int f_out, list* ls, int bg, int destructive) {
       output_sink = f_out;
     }
 
-
     pid = fork_aux();
 
     if (pid == 0) {
-      
-      exec_aux(comm->gl_pathv, pgid, input_src, output_sink, 
-	       stderr_handler_fd);
+
+      exec_aux(comm->gl_pathv, pgid, input_src, output_sink, stderr_handler_fd);
 
     } else {
       if (!pgid) pgid = pid;
@@ -843,7 +817,7 @@ pid_t do_pipe(int f_src, int f_out, list* ls, int bg, int destructive) {
 
       setpgid(pid, pgid);
     }
-    
+
     globfree(comm);
     gc_free(comm);
     comm = NULL;
@@ -884,7 +858,7 @@ pid_t do_pipe(int f_src, int f_out, list* ls, int bg, int destructive) {
 
   return ret;
 
-  done:
+done:
 
   if (job) {
     if (job->name) {
@@ -908,9 +882,8 @@ pid_t do_pipe(int f_src, int f_out, list* ls, int bg, int destructive) {
   return -1;
 }
 
-
 list* do_builtin(list* ls) {
-  list* (*func)(list*);
+  list*(*func)(list*);
   list* foo;
 
   if (ls == NULL || exception_flag) return NULL;
@@ -919,7 +892,7 @@ list* do_builtin(list* ls) {
     error("esh: command names are always strings.");
     return NULL;
   }
-  
+
   func = hash_get(builtins, ls_data(ls));
   foo = hash_get(defines, ls_data(ls));
 
@@ -950,7 +923,7 @@ list* parse_builtin(char* input, int* i, int liter, int delay) {
 
   char token;
   int len = 128;
-  char* value = (char*)gc_alloc(sizeof(char)*len, "parse_builtin");
+  char* value = (char*)gc_alloc(sizeof(char) * len, "parse_builtin");
 
   int did_pass = 0;
   int pass_liter = 0;
@@ -962,7 +935,7 @@ list* parse_builtin(char* input, int* i, int liter, int delay) {
 
   if (!openparen(token)) {
     error("esh: parse error: commands should always use "
-	  "parentheses.");
+          "parentheses.");
     goto done;
   }
 
@@ -993,9 +966,9 @@ list* parse_builtin(char* input, int* i, int liter, int delay) {
     } else if (delaysym(token)) {
       did_pass = 1;
       pass_liter = 1;
-      pass_delay = delay+1;
+      pass_delay = delay + 1;
 
-      passthru = parse_builtin(input, i, 1, delay+1);
+      passthru = parse_builtin(input, i, 1, delay + 1);
 
     } else if (closeparen(token)) {
       break;
@@ -1005,37 +978,35 @@ list* parse_builtin(char* input, int* i, int liter, int delay) {
       goto done;
     }
 
-
-
     if (did_pass) {
       if (pass_liter) {
-	ls = ls_cons(passthru, ls);
+        ls = ls_cons(passthru, ls);
 
-	ls_type_set(ls, TYPE_LIST);
+        ls_type_set(ls, TYPE_LIST);
 
-	if (pass_delay) {
-	  ls_flag_set(ls, pass_delay);
-	}
+        if (pass_delay) {
+          ls_flag_set(ls, pass_delay);
+        }
 
       } else {
-	list* iter;
+        list* iter;
 
-	if (passthru) {
-	  for (iter = passthru; iter != NULL; iter = ls_next(iter)) {
+        if (passthru) {
+          for (iter = passthru; iter != NULL; iter = ls_next(iter)) {
 
-	    if (ls_type(iter) == TYPE_VOID) continue;
+            if (ls_type(iter) == TYPE_VOID) continue;
 
-	    ls = ls_cons(ls_data(iter), ls);
-	    ls_type_set(ls, ls_type(iter));
-	    ls_flag_set(ls, ls_flag(iter));
-	  }
+            ls = ls_cons(ls_data(iter), ls);
+            ls_type_set(ls, ls_type(iter));
+            ls_flag_set(ls, ls_flag(iter));
+          }
 
-	  ls_free_shallow(passthru);
+          ls_free_shallow(passthru);
 
-	} else {
-	  ls = ls_cons(NULL, ls);
-	  ls_type_set(ls, TYPE_LIST);
-	}
+        } else {
+          ls = ls_cons(NULL, ls);
+          ls_type_set(ls, TYPE_LIST);
+        }
       }
     } else {
       ls = ls_cons(value, ls);
@@ -1046,7 +1017,7 @@ list* parse_builtin(char* input, int* i, int liter, int delay) {
   gc_free(value);
 
   ls = ls_reverse(ls);
-  
+
   if (liter) {
     return ls;
 
@@ -1057,37 +1028,33 @@ list* parse_builtin(char* input, int* i, int liter, int delay) {
     return ret;
   }
 
- done:
+done:
   ls_free_all(ls);
   gc_free(value);
   return NULL;
 
 }
 
-
 list* parse_sequence(list* ret, char* input, int* i, char* tok) {
   int len = 127;
-  char* value = (char*)gc_alloc(sizeof(char) * len,
-				"parse_sequence");
+  char* value = (char*)gc_alloc(sizeof(char) * len, "parse_sequence");
   while (1) {
     (*tok) = next_token(input, i, &value, &len);
-  
+
     if (special(*tok)) {
       break;
 
     } else {
       ret = ls_cons(value, ret);
 
-      value = (char*)gc_alloc(sizeof(char) * len,
-			      "parse_sequence");
+      value = (char*)gc_alloc(sizeof(char) * len, "parse_sequence");
     }
   }
 
   gc_free(value);
-  
+
   return ret;
 }
-
 
 list* parse_split(char* input) {
   list* ls = NULL;
@@ -1101,7 +1068,7 @@ list* parse_split(char* input) {
 
   while (1) {
     ls = parse_sequence(ls, input, &i, &token);
-    
+
     if (!token) break;
 
     if (special(token)) {
@@ -1119,7 +1086,6 @@ list* parse_split(char* input) {
   return ls_reverse(ls);
 }
 
-
 void parse_pipe(char* input) {
   list* ls = NULL;
 
@@ -1136,15 +1102,13 @@ void parse_pipe(char* input) {
 
   list* catter;
 
-
   while (1) {
     catter = ls_reverse(parse_sequence(NULL, input, &i, &foo));
 
     ls = ls_cons(catter, ls);
     ls_type_set(ls, TYPE_LIST);
 
-    if (!separator(foo))
-      break;
+    if (!separator(foo)) break;
   }
 
   old = foo;
@@ -1154,18 +1118,18 @@ void parse_pipe(char* input) {
       token = next_token(input, &i, &value, &len);
 
       if (redirect_in(old) && !special(token) && !f_in) {
-	f_in = value;
-	foo = -1;
-	value = (char*)gc_alloc(sizeof(char) * len, "parse_pipe");
+        f_in = value;
+        foo = -1;
+        value = (char*)gc_alloc(sizeof(char) * len, "parse_pipe");
 
       } else if (redirect_out(old) && !special(token) && !f_out) {
-	f_out = value;
-	foo = -1;
-	value = (char*)gc_alloc(sizeof(char) * len, "parse_pipe");
+        f_out = value;
+        foo = -1;
+        value = (char*)gc_alloc(sizeof(char) * len, "parse_pipe");
 
       } else {
-	error("esh: parse error: special syntax where redirection should be.");
-	goto done;
+        error("esh: parse error: special syntax where redirection should be.");
+        goto done;
       }
 
       old = next_token(input, &i, &value, &len);
@@ -1174,7 +1138,7 @@ void parse_pipe(char* input) {
 
   if (old) {
     error("esh: parse error: extraneous characters after redirection "
-	  "operators.");
+          "operators.");
     goto done;
   }
 
@@ -1202,68 +1166,64 @@ void parse_pipe(char* input) {
       tmp2 = eval(alias);
       ls_free_all(stack);
       ls_free_all(tmp2);
-      
+
       stack = oldstack;
 
       goto done;
     }
   }
 
-
   do_pipe(fd_in, fd_out, ls, 0, 0);
 
   close_aux(fd_in);
   close_aux(fd_out);
 
- done:
+done:
 
   ls_free_all(ls);
   gc_free(value);
 
-  if (f_in)  gc_free(f_in);
+  if (f_in) gc_free(f_in);
   if (f_out) gc_free(f_out);
 }
-
 
 static void ls_print_aux(list* ls, int i, int delay) {
   list* iter;
 
-  if (i)
-    printf("(");
+  if (i) printf("(");
 
   for (iter = ls; iter != NULL; iter = ls_next(iter)) {
 
     switch (ls_type(iter)) {
-    case TYPE_LIST:
-      if (iter && ls_flag(iter) > delay) {
-	printf("~");
+      case TYPE_LIST:
+        if (iter && ls_flag(iter) > delay) {
+          printf("~");
+        }
+
+        ls_print_aux(ls_data(iter), 1, ls_flag(iter));
+        break;
+
+      case TYPE_STRING:
+        printf("%s", (char*)ls_data(iter));
+        break;
+
+      case TYPE_HASH:
+        printf("<hash: %p>", ls_data(iter));
+        break;
+
+      case TYPE_BOOL:
+        printf("<bool: %s>", ls_data(iter) ? "t" : "f");
+        break;
+
+      case TYPE_FD: {
+        int* fd = ls_data(iter);
+        printf("<file: %d, %d>", fd[0], fd[1]);
+        break;
       }
 
-      ls_print_aux(ls_data(iter), 1, ls_flag(iter));
-      break;
-
-    case TYPE_STRING:
-      printf("%s", (char*)ls_data(iter));
-      break;
-
-    case TYPE_HASH:
-      printf("<hash: %p>", ls_data(iter));
-      break;
-
-    case TYPE_BOOL:
-      printf("<bool: %s>", ls_data(iter) ? "t" : "f");
-      break;
-
-    case TYPE_FD:
-      {
-	int* fd = ls_data(iter);
-	printf("<file: %d, %d>", fd[0], fd[1]);
-	break;
-      }
-
-    case TYPE_PROC:
-      printf("<process: %d>", *(pid_t*)(ls_data(iter)));
-      break;
+      case TYPE_PROC:
+        printf("<process: %d>", *(pid_t*)(ls_data(iter)));
+        break;
     }
 
     if (ls_next(iter)) {
@@ -1271,15 +1231,10 @@ static void ls_print_aux(list* ls, int i, int delay) {
     }
   }
 
-  if (i)
-    printf(")");
+  if (i) printf(")");
 }
 
-
-void ls_print(list* ls) {
-  ls_print_aux(ls, 0, 0);
-}
-
+void ls_print(list* ls) { ls_print_aux(ls, 0, 0); }
 
 void parse_command(char* input) {
   int i = 0;
@@ -1324,7 +1279,7 @@ void parse_command(char* input) {
 
   } else if (special(token)) {
     error("esh: parse error: unexpected special syntax at the beginning of "
-	  "the command.");
+          "the command.");
 
   } else {
     parse_pipe(input);
@@ -1332,7 +1287,6 @@ void parse_command(char* input) {
 
   gc_free(value);
 }
-
 
 int parse_file(int file, char** buff, int* len) {
   int i = 0;
@@ -1360,20 +1314,20 @@ int parse_file(int file, char** buff, int* len) {
     if (!inquote && comment(chr)) {
       while (1) {
 
-	if (read(file, &chr, 1) <= 0) {
-	  break;
-	}
+        if (read(file, &chr, 1) <= 0) {
+          break;
+        }
 
-	if (chr == '\n') break;
+        if (chr == '\n') break;
       }
     }
 
     if (quote(chr)) {
       if (inquote == quote(chr)) {
-	inquote = 0;
+        inquote = 0;
 
       } else if (!inquote) {
-	inquote = quote(chr);
+        inquote = quote(chr);
       }
 
     } else if (!inquote && openparen(chr)) {
@@ -1383,9 +1337,9 @@ int parse_file(int file, char** buff, int* len) {
       did_one = 1;
       parencount--;
 
-    } 
+    }
 
-    if (i >= (*len)-2) {
+    if (i >= (*len) - 2) {
       char* tmp = (char*)gc_alloc(sizeof(char) * (*len) * 2, "parse_file");
 
       (*len) *= 2;
@@ -1411,11 +1365,10 @@ int parse_file(int file, char** buff, int* len) {
   return 1;
 }
 
-
 char* get_prompt(void) {
   char* ret;
   list* prompt_ev;
-  
+
   if (prompt) {
     prompt_ev = eval(prompt);
 
@@ -1431,7 +1384,6 @@ char* get_prompt(void) {
   return ret;
 }
 
-
 void do_file(char* fname, int do_error) {
   int file = STDIN_FILENO;
 
@@ -1445,9 +1397,9 @@ void do_file(char* fname, int do_error) {
   if (file < 0) {
     if (do_error) {
       if (fname) {
-	error("esh: could not load script file \"%s\".", fname);
+        error("esh: could not load script file \"%s\".", fname);
       } else {
-	error("esh: could not load script file from stdin.");
+        error("esh: could not load script file from stdin.");
       }
     }
 
@@ -1463,20 +1415,17 @@ void do_file(char* fname, int do_error) {
 
   gc_free(buff);
 }
-  
 
 static int rl_literal_newline(int count, int key) {
   rl_insert_text("\n");
   return 0;
 }
 
-
 static void exception(int signum) {
   exception_flag = 1;
 
   signal(SIGINT, exception);
 }
-
 
 void init_shell(int argc, char** argv) {
   char buff[256];
@@ -1523,10 +1472,10 @@ void init_shell(int argc, char** argv) {
   ls_type_set(ls_void, TYPE_VOID);
 
   if (interactive) {
-  
+
     while (1) {
       pgid = getpgrp();
-    
+
       if (tcgetpgrp(shell_terminal_fd) == pgid) break;
 
       kill(-pgid, SIGTTIN);
@@ -1538,26 +1487,27 @@ void init_shell(int argc, char** argv) {
     signal(SIGTSTP, SIG_IGN);
     signal(SIGTTIN, SIG_IGN);
     signal(SIGTTOU, SIG_IGN);
-    
+
     signal(SIGCHLD, babysit);
 
     self_pid = getpid();
 
     if (setpgid(0, self_pid) < 0) {
       error("esh: could not put myself in my own process group.");
-      error("esh: %s.", 
-            (errno == EINVAL ? "pgid < 0" :
-            (errno == EPERM  ? "permission denied" :
-            (errno == ESRCH  ? "no such PID" : 
-            ("unknown error")))));             
+      error("esh: %s.",
+            (errno == EINVAL
+                 ? "pgid < 0"
+                 : (errno == EPERM ? "permission denied"
+                                   : (errno == ESRCH ? "no such PID"
+                                                     : ("unknown error")))));
     }
-    
+
     tcgetattr(shell_terminal_fd, &shell_terminal_modes);
 
     rl_bind_key('\012', rl_literal_newline);
   }
 
-  for (i = argc-1; i > 0; i--) {
+  for (i = argc - 1; i > 0; i--) {
     stack = ls_cons(dynamic_strcpy(argv[i]), stack);
   }
 
@@ -1577,7 +1527,6 @@ void init_shell(int argc, char** argv) {
   }
 }
 
-
 int main(int argc, char** argv, char** env) {
   char* pmt;
   char* line = NULL;
@@ -1590,17 +1539,16 @@ int main(int argc, char** argv, char** env) {
     while (1) {
       exception_flag = 0;
       arrange_funeral();
-    
+
       pmt = get_prompt();
       line = readline(pmt);
       gc_free(pmt);
-    
-      if (!line) { 
-	break;
+
+      if (!line) {
+        break;
       }
-    
-      if (*line)
-	add_history(line);
+
+      if (*line) add_history(line);
 
       parse_command(line);
 
@@ -1611,7 +1559,6 @@ int main(int argc, char** argv, char** env) {
     do_file(NULL, 1);
   }
 
-  
   close_aux(stderr_handler_fd);
 
 #ifdef MEM_DEBUG
@@ -1654,4 +1601,3 @@ int main(int argc, char** argv, char** env) {
 
   return EXIT_SUCCESS;
 }
-

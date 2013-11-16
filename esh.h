@@ -1,9 +1,8 @@
-/* 
- * esh, the Unix shell with Lisp-like syntax. 
+/*
+ * esh, the Unix shell with Lisp-like syntax.
  * Copyright (C) 1999  Ivan Tkatchev
  * This source code is under the GPL.
  */
-
 
 extern int interactive;
 extern int exception_flag;
@@ -42,6 +41,3 @@ extern char* ls_strcat(list* ls);
 
 extern void job_foreground(job_t* job);
 extern void job_background(job_t* job);
-
-
-

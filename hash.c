@@ -1,10 +1,8 @@
-/* 
- * esh, the Unix shell with Lisp-like syntax. 
+/*
+ * esh, the Unix shell with Lisp-like syntax.
  * Copyright (C) 1999  Ivan Tkatchev
  * This source code is under the GPL.
  */
-
-
 
 #include <stdlib.h>
 #include <string.h>
@@ -14,7 +12,6 @@
 #include "hash.h"
 
 #define HASH_SIZE 1024
-
 
 /*
  * A simple but braindead hasher function.
@@ -31,10 +28,8 @@ static int hash(char* key) {
   return i % HASH_SIZE;
 }
 
-
-
 static void* hash_put_aux(hash_table* _hash_array, char* key, void* data,
-			  int doinc) {
+                          int doinc) {
   hash_entry* hs_ent;
   void* ret;
 
@@ -56,10 +51,10 @@ static void* hash_put_aux(hash_table* _hash_array, char* key, void* data,
       hs_ent->data = data;
 
       if (doinc) {
-	for (i = 1; i < refs; i++) {
-	  hs_ent->data = ls_copy(hs_ent->data);
-	  ls_free_all(ret);
-	}
+        for (i = 1; i < refs; i++) {
+          hs_ent->data = ls_copy(hs_ent->data);
+          ls_free_all(ret);
+        }
       }
 
       return ret;
@@ -70,14 +65,14 @@ static void* hash_put_aux(hash_table* _hash_array, char* key, void* data,
 
   hs_ent->key = key;
   hs_ent->data = data;
-  
+
   (*_hash_array)[idx] = ls_cons(hs_ent, bucket);
 
   if (doinc) {
-    gc_add_ref((*_hash_array)[idx], refs-1);
-    gc_add_ref(hs_ent, refs-1);
+    gc_add_ref((*_hash_array)[idx], refs - 1);
+    gc_add_ref(hs_ent, refs - 1);
 
-    gc_add_ref(hs_ent->key, refs-1);
+    gc_add_ref(hs_ent->key, refs - 1);
 
     for (i = 1; i < refs; i++) {
       hs_ent->data = ls_copy(hs_ent->data);
@@ -87,7 +82,6 @@ static void* hash_put_aux(hash_table* _hash_array, char* key, void* data,
   return NULL;
 }
 
-
 inline void* hash_put(hash_table* tab, char* key, void* data) {
   return hash_put_aux(tab, key, data, 0);
 }
@@ -96,7 +90,6 @@ inline void* hash_put_inc_ref(hash_table* tab, char* key, void* data) {
   return hash_put_aux(tab, key, data, 1);
 }
 
-
 void* hash_get(hash_table* _hash_array, char* key) {
   int idx = hash(key);
 
@@ -104,7 +97,7 @@ void* hash_get(hash_table* _hash_array, char* key) {
   list* iter;
 
   for (iter = bucket; iter != NULL; iter = ls_next(iter)) {
-    if (strcmp(((hash_entry*)ls_data(iter))->key, key) == 0) 
+    if (strcmp(((hash_entry*)ls_data(iter))->key, key) == 0)
       return ((hash_entry*)ls_data(iter))->data;
   }
 
@@ -114,8 +107,7 @@ void* hash_get(hash_table* _hash_array, char* key) {
 void hash_init(hash_table* _hash_array, hash_entry data[]) {
   int i;
 
-  (*_hash_array) = (list**)gc_alloc(sizeof(list*) * HASH_SIZE,
-				    "hash_init");
+  (*_hash_array) = (list**)gc_alloc(sizeof(list*) * HASH_SIZE, "hash_init");
 
   for (i = 0; i < HASH_SIZE; i++)
     (*_hash_array)[i] = NULL;
@@ -130,9 +122,7 @@ void hash_init(hash_table* _hash_array, hash_entry data[]) {
   }
 }
 
-void hash_free(hash_table* tab, 
-	       void (*func1)(),
-	       void (*func2)()) {
+void hash_free(hash_table* tab, void (*func1)(), void (*func2)()) {
   int i;
   list* iter;
 
@@ -140,22 +130,19 @@ void hash_free(hash_table* tab,
     for (iter = (*tab)[i]; iter != NULL; iter = ls_next(iter)) {
       hash_entry* he = (hash_entry*)(ls_data(iter));
 
-      if (func1)
-	func1(he->key);
+      if (func1) func1(he->key);
 
-      if (func2)
-	func2(he->data);
+      if (func2) func2(he->data);
 
       gc_free(he);
     }
 
     ls_free((*tab)[i]);
-    
+
   }
 
   gc_free((*tab));
 }
-
 
 void hash_inc_ref(hash_table* tab) {
   int i;
@@ -175,8 +162,6 @@ void hash_inc_ref(hash_table* tab) {
 
   gc_inc_ref((*tab));
 }
-
-
 
 list* hash_keys(hash_table* tab) {
   int i;
