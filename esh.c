@@ -21,8 +21,8 @@
 #include <stdlib.h>
 #include <termios.h>
 
-#include <readline.h>
-#include <history.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 #include <glob.h>
 

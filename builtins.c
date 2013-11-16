@@ -16,7 +16,7 @@
 
 #include <regex.h>
 
-#include <readline.h>
+#include <readline/readline.h>
 
 #include "common.h"
 #include "format.h"
