@@ -1,0 +1,13 @@
+This package was debianized by Edward Betts edward@debian.org on
+Fri, 26 Feb 1999 07:48:30 +0000.
+
+It was downloaded from http://esh.netpedia.net/esh-0.8.tar.gz
+
+Upstream Author: Ivan Tkatchev <ivantk@yahoo.com>
+
+Copyright:
+
+esh is distributed under the terms of the GNU GPL. 
+
+On Debian GNU/Linux systems, the complete text of the GNU General
+Public License can be found in `/usr/share/common-licenses/GPL'.

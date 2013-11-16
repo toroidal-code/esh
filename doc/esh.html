@@ -1,0 +1,1797 @@
+<HTML>
+<HEAD>
+<!-- Created by texi2html 1.56k from esh.texi on 7 January 2000 -->
+
+<TITLE>esh, the easy shell.</TITLE>
+</HEAD>
+<BODY>
+<H1>esh, the easy shell.</H1>
+<P>
+<P><HR><P>
+
+<P>
+esh, the easy shell.
+
+
+<P>
+     
+
+
+<P>
+<A NAME="IDX1"></A>
+
+
+<H1><A NAME="SEC1" HREF="esh_toc.html#TOC1">1. Rationale</A></H1>
+
+<P>
+<CODE>esh</CODE> was primarily written out of a need for a simple and lightweight shell
+for Unix. As such, it deviates completely from all of the traditional
+shells, opting instead for a Lisp-like syntax. This allows exceptionally 
+small size, both in terms of lines of code and memory consumption, while
+retaining remarkable flexibility and programmability.
+
+
+<P>
+<A NAME="IDX2"></A>
+<A NAME="IDX3"></A>
+<A NAME="IDX4"></A>
+
+
+<H1><A NAME="SEC2" HREF="esh_toc.html#TOC2">2. Overview</A></H1>
+
+<P>
+<A NAME="IDX5"></A>
+<A NAME="IDX6"></A>
+<A NAME="IDX7"></A>
+<A NAME="IDX8"></A>
+<A NAME="IDX9"></A>
+
+
+<H2><A NAME="SEC3" HREF="esh_toc.html#TOC3">2.1 Starting <CODE>esh</CODE></A></H2>
+
+<P>
+To start the shell, simply type <CODE>esh</CODE>. There are no command-line 
+parameters. However, since all the command-line arguments are available
+to the shell programmer, it is a simple matter to write your own argument
+processing routine and place it in your <CODE>.eshrc</CODE> file.
+
+
+<P>
+Both <CODE>/etc/eshrc</CODE> and the <CODE>.eshrc</CODE> in your home directory will
+be run by the shell on startup, if they exist.
+
+
+<P>
+<A NAME="IDX10"></A>
+<A NAME="IDX11"></A>
+<A NAME="IDX12"></A>
+<A NAME="IDX13"></A>
+
+
+<H2><A NAME="SEC4" HREF="esh_toc.html#TOC4">2.2 Interaction</A></H2>
+
+<P>
+If the shell is running interactively, you will get a prompt, <CODE>$ </CODE> by
+default. Since the shell uses the readline library, you can use line-editing
+keystrokes, the history buffer, filename completion, and the rest of the 
+goodies provided by the readline library.
+
+
+<P>
+To run a single executable, simply type it in as you would in any other
+shell. Example: <CODE>/usr/games/fortune -m Unix</CODE>.
+
+
+<P>
+To run a pipeline, type several commands separated by commas or vertical
+lines. Example:
+<CODE>cat /var/log/messages, grep pppd, grep "IP address", xmessage -file -</CODE>.
+
+
+<P>
+To run a pipeline with file redirection, place the redirection symbols and the
+filenames after the pipeline. Example:
+<CODE>sort, uniq &#60; names.raw &#62; names.sorted</CODE>. In this case, the contents of
+<CODE>names.raw</CODE> are used as the standard input of <CODE>sort</CODE>, and the output 
+of the whole pipeline is saved to <CODE>names.sorted</CODE>. The order in which 
+the redirection symbols are given does not matter, but a valid filename 
+should always follow a redirection symbol.
+
+
+<P>
+Note one major pitfall: <CODE>cd</CODE>, <CODE>bg</CODE>, <CODE>fg</CODE>, etc., are all
+builtin shell commands! For info on running shell commands, see the
+next section. (see section <A HREF="esh.html#SEC5">2.3 Simple Programming</A>)
+
+
+<P>
+<A NAME="IDX14"></A>
+<A NAME="IDX15"></A>
+<A NAME="IDX16"></A>
+
+
+<H2><A NAME="SEC5" HREF="esh_toc.html#TOC5">2.3 Simple Programming</A></H2>
+
+<P>
+All shell commands are specified using a parenthetical syntax
+very similar to that of Lisp or Scheme. Example: Use <CODE>(cd /var)</CODE> to change
+the current directory. In this case, <CODE>cd</CODE> is the name of the command,
+and <CODE>/var</CODE> is the argument. Multiple arguments to the same 
+command are separated by white space. Example: <CODE>(set HOME /home/ivan)</CODE>.
+Builtin commands never accept options in the
+style of compiled programs. Also note that quotes around string values are
+not required, though they are certainly allowed at any time if you wish
+to escape special characters. (In fact, using quotes is the only way to
+do this. Backslash escape sequences are not recognized.) Example: 
+<CODE>(cd "funny,directory name()")</CODE>. In this case, the whole string inside
+the quotes is used as the argument verbatim. Single quotes and double
+quotes are equivalent.
+
+
+<P>
+If a command returns anything, the returned data will be printed
+by the shell. Example: <CODE>(get HOME)</CODE> => <CODE>/home/ivan</CODE>.
+
+
+<P>
+Note that you can certainly use the return values of one command as input
+to another. Example: <CODE>(cd (get HOME))</CODE>
+
+
+<P>
+If you want to pass a list instead of a string as an argument to a command,
+quote the list with a tilde. Example: 
+<CODE>(run-simple ~(ls --color=yes))</CODE>. Here, the <CODE>run</CODE> command is given
+a list as an argument. 
+
+
+<P>
+Note that a sublist of a quoted list is also quoted; that is, 
+<CODE>~(1.1 (2.1 2.2) 1.2)</CODE> is a list of three elements, the first and last
+are strings and the middle element is a list. 
+
+
+<P>
+See section <A HREF="esh.html#SEC8">2.6 Basic Usage</A>, for an explanation of what <CODE>cd</CODE>, <CODE>get</CODE>, 
+<CODE>set</CODE>, and <CODE>run</CODE> do.
+
+
+<P>
+<A NAME="IDX17"></A>
+<A NAME="IDX18"></A>
+
+
+<H2><A NAME="SEC6" HREF="esh_toc.html#TOC6">2.4 Non-interactive</A></H2>
+
+<P>
+If the shell is started non-interactively -- for example, when the standard
+input to the shell is a file -- the shell will only accept commands.
+To run executables and construct pipes, simply use the <CODE>run</CODE> 
+command.
+(see section <A HREF="esh.html#SEC8">2.6 Basic Usage</A>)
+
+
+<P>
+<A NAME="IDX19"></A>
+<A NAME="IDX20"></A>
+<A NAME="IDX21"></A>
+<A NAME="IDX22"></A>
+
+
+<H2><A NAME="SEC7" HREF="esh_toc.html#TOC7">2.5 Job Control</A></H2>
+
+<P>
+If the shell is running interactively, you will have access to job control
+primitives. 
+
+
+<P>
+To stop a job in the foreground, simply type <KBD>C-z</KBD>, as in other shells.
+
+
+<P>
+To bring the last known job into foreground or background, issue the <CODE>fg</CODE>
+or <CODE>bg</CODE> command, respectively, without arguments. 
+(see section <A HREF="esh.html#SEC5">2.3 Simple Programming</A>)
+
+
+<P>
+To get a listing of all the currently known jobs, issue the <CODE>jobs</CODE> 
+command, also without arguments.
+
+
+<P>
+If the <CODE>fg</CODE> or <CODE>bg</CODE> command is given a single numeric argument, it
+will act on the job number specified by that argument. To find out the job
+number for a command, simply issue the <CODE>jobs</CODE> command. 
+
+
+<P>
+Note: the job number is <EM>not</EM> the PID!
+
+
+<P>
+<A NAME="IDX23"></A>
+<A NAME="IDX24"></A>
+<A NAME="IDX25"></A>
+<A NAME="IDX26"></A>
+<A NAME="IDX27"></A>
+<A NAME="IDX28"></A>
+<A NAME="IDX29"></A>
+<A NAME="IDX30"></A>
+<A NAME="IDX31"></A>
+<A NAME="IDX32"></A>
+<A NAME="IDX33"></A>
+<A NAME="IDX34"></A>
+<A NAME="IDX35"></A>
+<A NAME="IDX36"></A>
+<A NAME="IDX37"></A>
+<A NAME="IDX38"></A>
+<A NAME="IDX39"></A>
+<A NAME="IDX40"></A>
+<A NAME="IDX41"></A>
+<A NAME="IDX42"></A>
+<A NAME="IDX43"></A>
+
+
+<H2><A NAME="SEC8" HREF="esh_toc.html#TOC8">2.6 Basic Usage</A></H2>
+
+
+<UL>
+<LI>
+
+<CODE>(cd [string])</CODE> Change the current directory to the given
+argument. If the directory name is a single dash, the previous directory
+will be used. (i.e. the value of the environment variable <CODE>OLDPWD</CODE>)
+If the command is called without any arguments, change to the home directory.
+
+<LI>
+
+<CODE>(jobs)</CODE> List the current jobs.
+
+<LI>
+
+<CODE>(fg [number])</CODE> If the optional numeric argument is given, bring
+the job number given by the argument into the foreground. If this argument
+is omitted, bring the first job into the foreground.
+
+<LI>
+
+<CODE>(bg [number])</CODE> Same as <CODE>fg</CODE>, but puts a job into the background.
+
+<LI>
+
+<CODE>(run &#60;bool&#62; &#60;file&#62; &#60;file&#62; &#60;list&#62;...)</CODE> Run a pipeline.
+The first argument should be <CODE>false</CODE> if you want the command to be
+brought into the foreground, or <CODE>true</CODE> if otherwise.
+The next two arguments are the input and output redirection files, 
+respectively. You can use <CODE>(standard)</CODE> for standard input/output. 
+The rest of the arguments are the commands you want to run,
+given as lists.
+If the command was run in the background, then the return value
+is the PID of the last executable in the pipeline. Otherwise, the return
+value is the exit status of the pipeline.
+
+Examples: 
+<CODE>(run (false) (standard) (standard) ~(/usr/games/fortune -m Unix))</CODE> 
+is equivalent to
+<CODE>/usr/games/fortune -m Unix</CODE>.
+<CODE>(run (false) (file-open file "names.raw") (file-open file "names.sorted") ~(sort) ~(uniq))</CODE> is equivalent to
+<CODE>sort, uniq &#60; names.raw &#62; names.sorted</CODE>.
+
+<LI>
+
+<CODE>(run-simple &#60;list&#62;...)</CODE> Equivalent to 
+<CODE>(run (false) (standard) (standard) ...)</CODE>.
+This command returns the exit status of the pipeline.
+
+<LI>
+
+<CODE>(get &#60;string&#62;)</CODE> Return the environment variable named by the given
+argument.
+
+<LI>
+
+<CODE>(set &#60;string&#62; &#60;string&#62;)</CODE> Set the environment variable named by the first
+string to be the second string.
+
+<LI>
+
+<CODE>(env)</CODE> List all environment variables.
+
+<LI>
+
+<CODE>(print ...)</CODE> Print the given arguments on the standard output in
+a human-readable form. 
+
+<LI>
+
+<CODE>(+ &#60;number&#62;...)</CODE> Add all the arguments.
+
+<LI>
+
+<CODE>(- &#60;number&#62;...)</CODE> Subtract the arguments following the first argument
+from the first argument.
+
+<LI>
+
+<CODE>(* &#60;number&#62;...)</CODE> Multiply all the arguments.
+
+<LI>
+
+<CODE>(/ &#60;number&#62;...)</CODE> Divide the first argument by the rest of the arguments.
+
+<LI>
+
+<CODE>(&#60; &#60;number&#62; &#60;number&#62;)</CODE> Return <CODE>true</CODE> if the first number is
+less than the second; otherwise, return <CODE>false</CODE>.
+
+<LI>
+
+<CODE>(&#62; &#60;number&#62; &#60;number&#62;)</CODE> Return <CODE>true</CODE> if the first number is
+less than the second; otherwise, return <CODE>false</CODE>.
+
+<LI>
+
+<CODE>(if &#60;any&#62; &#60;any&#62; &#60;any&#62;)</CODE> If the \"eval\" of the
+first argument is <CODE>false</CODE>, execute <CODE>eval</CODE> on the second argument. 
+Otherwise, execute <CODE>eval</CODE> on the third argument. Note that the 
+arguments must be quoted right! (see section <A HREF="esh.html#SEC12">3.3 Quoting Trickery</A> for 
+more info on that.)
+
+<LI>
+
+<CODE>(list ...)</CODE> Compose a list made of the given arguments and return it.
+
+<LI>
+
+<CODE>(eval ...)</CODE> If an argument is a string or a hash table, simply return it.
+Otherwise, execute the given list as if it was a command. 
+For example, typing in
+<CODE>(eval ~(print Hello World!))</CODE> is equivalent to 
+<CODE>(print Hello World!)</CODE>. However, you must make sure that the list given
+to <CODE>eval</CODE> is quoted properly in order to delay evaluation
+until the right moment. (see section <A HREF="esh.html#SEC12">3.3 Quoting Trickery</A> for more info.)
+
+<LI>
+
+<CODE>(= &#60;string&#62; &#60;string&#62;)</CODE> Compare the two strings and return an empty
+list if they are not equal. Otherwise, simply return the first string.
+
+</UL>
+
+<P>
+<A NAME="IDX44"></A>
+<A NAME="IDX45"></A>
+<A NAME="IDX46"></A>
+
+
+<H1><A NAME="SEC9" HREF="esh_toc.html#TOC9">3. Details</A></H1>
+
+<P>
+A programmer's manual and a tutorial.
+
+
+<P>
+<A NAME="IDX47"></A>
+
+
+<H2><A NAME="SEC10" HREF="esh_toc.html#TOC10">3.1 Syntax</A></H2>
+
+<P>
+Here is a description of the syntax of <CODE>esh</CODE>. Note, however, that 
+this grammar is only a descriptive tool, since the actual parser in the 
+shell is written by hand.
+
+
+<P>
+Also note that using the interactive-command syntax is not allowed when
+the shell is not started interactively.
+
+
+
+<PRE>
+openparen-symbol = '('
+closeparen-symbol = ')'
+delay-symbol = '~' | '$'
+pipe-symbol = ',' | '|'
+redirection-symbol = '&#60;' | '&#62;'
+
+script = /* Nothing */ |
+         list script
+
+list = openparen-symbol list-elements closeparen-symbol
+
+list-elements = /* Nothing */ |
+                string list-elements |
+                delay-symbol list list-elements |
+                list list-elements
+
+interactive-command = list |
+                      interactive-pipeline
+
+interactive-pipeline = /* Nothing */ | 
+                      interactive-pipe redirection redirection
+
+interactive-pipe = /* Nothing */ |
+                   single-command pipe-symbol interactive-pipe
+
+single-command = /* Nothing */ |
+                 string single-command
+
+redirection = /* Nothing */ |
+              redirection-symbol string
+</PRE>
+
+<P>
+<A NAME="IDX48"></A>
+<A NAME="IDX49"></A>
+<A NAME="IDX50"></A>
+<A NAME="IDX51"></A>
+<A NAME="IDX52"></A>
+<A NAME="IDX53"></A>
+<A NAME="IDX54"></A>
+
+
+<H2><A NAME="SEC11" HREF="esh_toc.html#TOC11">3.2 Semantics</A></H2>
+
+<P>
+One major deviation of <CODE>esh</CODE> from other programming languages is
+that commands are not functions. Any command can return any number of
+values, without explicit unpacking syntax. (e.g. <CODE>Python</CODE>)
+
+
+<P>
+For example, <CODE>(rest ~(foo bar baz))</CODE> => <CODE>bar baz</CODE>.
+These returned elements are not a list! Therefore, this code
+will produce an error: <CODE>(rest (rest ~(foo bar baz)))</CODE>. Instead, you
+should write: <CODE>(rest (list (rest ~(foo bar baz))))</CODE>.
+
+
+<P>
+The first, most important concept is the <CODE>define</CODE> command. This command
+allows you to define new commands, which are no different from builtin
+commands as far as the programmer is concerned.
+
+
+<P>
+The syntax of <CODE>define</CODE> is simple: <CODE>(define &#60;string&#62; ...)</CODE>.
+The first argument is simply the name of the command you are defining, and
+the rest of the arguments will simply be passed to <CODE>eval</CODE> whenever
+your new command is called.
+
+
+<P>
+It's important to realize that this code snippet
+<CODE>(define foo ~(print bar) bar) (foo)</CODE> is identical to
+this one: <CODE>(eval ~(print bar) bar)</CODE>. Therefore, anything that
+applies to <CODE>eval</CODE> also applies to commands defined by <CODE>define</CODE>.
+(see section <A HREF="esh.html#SEC12">3.3 Quoting Trickery</A> for more on that.)
+
+
+<P>
+If you are familiar with Scheme or Lisp, you'll notice the lack of
+argument passing information in the syntax of <CODE>define</CODE>. The reason for
+that is that the argument passing convention is radically different in
+<CODE>esh</CODE> from other Lisp-like languages.
+
+
+<P>
+Every command in <CODE>esh</CODE> has a stack all to itself for scratch space
+and local variables. When a user-defined command is run, all the arguments
+are simply placed on the local-variable stack, the first argument at the
+top.
+
+
+<P>
+To access the local-variable stack, several commands can be used.
+<CODE>(push &#60;any&#62;)</CODE> will push a value onto the stack, <CODE>(pop)</CODE> will
+remove the top element of the stack and return it, <CODE>(top)</CODE> will return
+a copy of the top element, <CODE>(stack)</CODE> will return a copy of the whole
+stack, and finally <CODE>(rot)</CODE> will switch the top and the next-to-top
+elements of the stack and return a copy of the element that just became
+the top one.
+
+
+<P>
+The top-level of the interpreter also has a stack; that is, typing the
+stack manipulation commands directly into the interpreter will produce the
+expected results.
+
+
+<P>
+Note that commands called recursively do not inherit the stack of the
+calling command.
+
+
+<P>
+Also note that <CODE>(stack)</CODE> does not return a list, it returns an 
+arbitrary number of elements. If you find typing <CODE>(list (stack))</CODE>
+frequently, you can instead use the <CODE>(l-stack)</CODE> command, since they are
+identical.
+
+
+<P>
+The shell does not support looping constructs in the traditional sense --
+like in Scheme, looping is accomplished by using recursion. Here is
+a concrete example:
+
+
+
+<PRE>
+(define print-squish
+        ~(if ~(not-null? (top))
+             ~(begin 
+                   (print (squish (pop)))
+                   (print-squish (stack)))
+              ()))
+</PRE>
+
+<P>
+The command <CODE>begin</CODE> simply returns the given arguments; its purpose 
+is to allow the use of several commands where one is asked for.
+(see section <A HREF="esh.html#SEC13">3.4 Command List</A> for the syntax of <CODE>if</CODE>)
+
+
+<P>
+Since <CODE>esh</CODE> 0.2, there is an explicit <CODE>true</CODE> and <CODE>false</CODE>
+value; these values are different from all other possible values. Commands
+that operate on predicates (<CODE>if</CODE>, <CODE>and</CODE>, <CODE>or</CODE>, <CODE>=</CODE>, etc.)
+use these values extensively. You can use them in your own scripts with
+the <CODE>true</CODE> and <CODE>false</CODE> commands. Note that <CODE>if</CODE>, <CODE>and</CODE>, 
+and <CODE>or</CODE> do not explicitly check for <CODE>true</CODE>, so to these commands
+any value that isn't <CODE>false</CODE> is "true", so to say.
+
+
+<P>
+<A NAME="IDX55"></A>
+<A NAME="IDX56"></A>
+<A NAME="IDX57"></A>
+<A NAME="IDX58"></A>
+
+
+<H2><A NAME="SEC12" HREF="esh_toc.html#TOC12">3.3 Quoting Trickery</A></H2>
+
+<P>
+(Note: Since <CODE>esh</CODE> 0.6, the backslash quote has been removed.
+Use the tilde quote instead.)
+
+
+<P>
+Note that the meaning of the quote syntax is much different in <CODE>esh</CODE>
+than in Lisp -- in Lisp, the single quote is a syntactic trick to
+allow inputting lists and symbols as literals. In <CODE>esh</CODE>, the tilde
+quote has a very clear semantic meaning -- whenever a list is marked with
+a tilde, it is marked as such throughout it's life. Commands such as
+<CODE>eval</CODE> can then use this information to see which lists were supposed
+to be evaluated, and which ones were meant to be left alone.
+
+
+<P>
+In other words, any list marked with a tilde has a numeric flag set on it,
+which is preserved on the list until the list is deleted.
+
+
+<P>
+Also, nested tildes increase the "strength" of the tilde, so to say. 
+<CODE>eval</CODE> will not evaluate lists which have a "strength" greater than
+itself, and calling <CODE>eval</CODE> recursively will increase it's strength.
+
+
+<P>
+This may sound confusing, but it has a simple intuitive meaning:
+
+
+
+<PRE>
+(eval ~(foo ~(bar baz)))
+</PRE>
+
+<P>
+Here, as you would expect, <CODE>eval</CODE> will only evaluate <CODE>foo</CODE>, and
+pass <CODE>(bar baz)</CODE> as a list to <CODE>foo</CODE>.
+
+
+<P>
+Note that unlike in Lisp, <CODE>esh</CODE> has no "special forms"! A command
+that works on lists is indistinguishable from a command that works
+on code. That's why there is no <CODE>lambda</CODE> command, and also why
+arguments to <CODE>if</CODE> and firends need to be quoted with a tilde.
+
+
+<P>
+<A NAME="IDX59"></A>
+<A NAME="IDX60"></A>
+<A NAME="IDX61"></A>
+<A NAME="IDX62"></A>
+<A NAME="IDX63"></A>
+<A NAME="IDX64"></A>
+<A NAME="IDX65"></A>
+<A NAME="IDX66"></A>
+<A NAME="IDX67"></A>
+<A NAME="IDX68"></A>
+<A NAME="IDX69"></A>
+<A NAME="IDX70"></A>
+<A NAME="IDX71"></A>
+<A NAME="IDX72"></A>
+<A NAME="IDX73"></A>
+<A NAME="IDX74"></A>
+<A NAME="IDX75"></A>
+<A NAME="IDX76"></A>
+<A NAME="IDX77"></A>
+<A NAME="IDX78"></A>
+<A NAME="IDX79"></A>
+<A NAME="IDX80"></A>
+<A NAME="IDX81"></A>
+<A NAME="IDX82"></A>
+<A NAME="IDX83"></A>
+<A NAME="IDX84"></A>
+<A NAME="IDX85"></A>
+<A NAME="IDX86"></A>
+<A NAME="IDX87"></A>
+<A NAME="IDX88"></A>
+<A NAME="IDX89"></A>
+<A NAME="IDX90"></A>
+<A NAME="IDX91"></A>
+<A NAME="IDX92"></A>
+<A NAME="IDX93"></A>
+<A NAME="IDX94"></A>
+<A NAME="IDX95"></A>
+<A NAME="IDX96"></A>
+<A NAME="IDX97"></A>
+<A NAME="IDX98"></A>
+<A NAME="IDX99"></A>
+<A NAME="IDX100"></A>
+<A NAME="IDX101"></A>
+<A NAME="IDX102"></A>
+<A NAME="IDX103"></A>
+<A NAME="IDX104"></A>
+<A NAME="IDX105"></A>
+<A NAME="IDX106"></A>
+<A NAME="IDX107"></A>
+<A NAME="IDX108"></A>
+<A NAME="IDX109"></A>
+<A NAME="IDX110"></A>
+<A NAME="IDX111"></A>
+<A NAME="IDX112"></A>
+<A NAME="IDX113"></A>
+<A NAME="IDX114"></A>
+<A NAME="IDX115"></A>
+<A NAME="IDX116"></A>
+<A NAME="IDX117"></A>
+<A NAME="IDX118"></A>
+<A NAME="IDX119"></A>
+<A NAME="IDX120"></A>
+<A NAME="IDX121"></A>
+<A NAME="IDX122"></A>
+<A NAME="IDX123"></A>
+<A NAME="IDX124"></A>
+<A NAME="IDX125"></A>
+<A NAME="IDX126"></A>
+
+
+<H2><A NAME="SEC13" HREF="esh_toc.html#TOC13">3.4 Command List</A></H2>
+
+
+<UL>
+
+<LI>
+
+<CODE>(alias &#60;string&#62; &#60;string&#62;...)</CODE> 
+Create an alias. The first argument is the name of the alias, and the
+rest of the arguments is the expansion. For example, <CODE>(alias rm rm -i)</CODE>
+will create an alias called <CODE>rm</CODE>, so that any time <CODE>rm</CODE> is run,
+<CODE>rm -i</CODE> gets executed in actuality.
+
+<LI>
+
+<CODE>(alias &#60;string&#62; &#60;list&#62;...)</CODE>
+Mimic an executable with a command. Whenever an executable named by
+the first string is run, the lists following get evaluated, and 
+their output is thrown away. This process will only happen during the
+parsing stage, though. That is, this type of alias will only be enabled
+when typing commands interactively into te shell.
+Example: <CODE>(alias cd ~(cd (stack)))</CODE> to mimic the
+traditional syntax of <CODE>cd</CODE>.
+
+<LI>
+
+<CODE>(alias-hash)</CODE>
+Return the alias hash table. Modifying this table also modifies the
+actual aliases.
+
+<LI>
+
+<CODE>(alive? &#60;PID&#62;)</CODE>
+Return <CODE>true</CODE> if the given process is alive, and <CODE>false</CODE> otherwise.
+
+<LI>
+
+<CODE>(and ...)</CODE> Return <CODE>false</CODE> if any of the arguments evaluate to
+<CODE>false</CODE>. Warning: the inputs need to be quoted with a tilde, since this
+command implements a short-circuited <CODE>"and"</CODE>!
+For example, <CODE>(and ~(under-attack) ~(launch-nukes))</CODE> is safe to use.
+If the <CODE>"eval"</CODE> of <CODE>~(under-attack)</CODE> evaluates to <CODE>false</CODE>
+<CODE>~(launch-nukes)</CODE> will never be evaluated.
+
+<LI>
+
+<CODE>(begin ...)</CODE>
+Simply copy the inputs to the outputs. This command is useful when you want
+to use several commands as if they were a single command. Example:
+
+
+<PRE>
+(if ~(check-me)
+    ~(begin (print-message)
+            (set-environment-magic))
+     ())
+</PRE>
+
+<LI>
+
+<CODE>(begin-last ...)</CODE> Evaluate the given arguments sequentially, and
+return the value of last argument.
+
+
+<PRE>
+(if ~(not-null? (top))
+    ~(begin (push foo) 
+            (print (stack))
+            (pop))
+    ())
+</PRE>
+
+<LI>
+
+<CODE>(builtin &#60;string&#62; ...)</CODE> Execute the builtin command named by the
+first argument, even if this name has already been <CODE>define</CODE>d.
+For example, here's how to write a custom replacement for <CODE>cd</CODE>:
+
+
+<PRE>
+(define cd
+        ~(push (squish (get HOME) "/.cdlog"))
+        ~(file-write (file-open file (top))
+                     (squish (file-read (file-open file (pop)))
+                             (stack) (nl)))
+        ~(builtin cd (stack)))
+</PRE>
+
+<LI>
+
+<CODE>(car &#60;list&#62;)</CODE> Simply return the first element of the list.
+
+<LI>
+
+<CODE>(car-l ...)</CODE> Return the first element.
+
+<LI>
+
+<CODE>(cdr &#60;list&#62;)</CODE> Return the elements of the list after the first one.
+
+<LI>
+
+<CODE>(chars &#60;string&#62;)</CODE> Return the charcters in the given string.
+
+<PRE>
+(chars "foo bar") =&#62; 'f' 'o' 'o' ' ' 'b' 'a' 'r'
+</PRE>
+
+<LI>
+
+<CODE>(chop! &#60;string&#62;)</CODE> Delete the last character in the given string,
+and return the given string.
+Note: this function modifies the string in-place!
+
+<LI>
+
+<CODE>(chop-nl! &#60;string&#62;)</CODE> Like <CODE>chop!</CODE>, except that it only deletes
+the last character if it is a newline.
+
+<LI>
+
+<CODE>(clone &#60;string&#62; &#60;number&#62;)</CODE> Return the first argument X number of times,
+where X is the numeric value of the second argument.
+
+<LI>
+
+<CODE>(copy)</CODE> Equivalent to <CODE>begin</CODE>.
+
+<LI>
+
+<CODE>(define &#60;string&#62; ...)</CODE> Define a new command, named by the
+first argument. The rest of the arguments will be passed to <CODE>eval</CODE> 
+when the newly defined command is called. Example:
+
+
+<PRE>
+(define print-nl
+        ~(print (stack) (nl)))
+</PRE>
+
+<LI>
+
+<CODE>(defined? &#60;string&#62;)</CODE> Return <CODE>false</CODE> if the given string has not
+been defined as a command.
+
+<LI>
+
+<CODE>(exec &#60;list&#62; ..)</CODE> Equivalent to <CODE>eval</CODE>, except that the stack will
+be set to the first argument for the duration of evaluation.
+
+<LI>
+
+<CODE>(exit [number])</CODE> Exit with the given exit status, or zero if the
+command is called with no arguments.
+
+<LI>
+
+<CODE>(false ...)</CODE> Return <CODE>false</CODE>.
+
+<LI>
+
+<CODE>(file-open &#60;string&#62; &#60;string&#62;)</CODE> Open a file. The first argument specifies
+the type of the file, and the second the name of the file you want to open.
+Allowed values for the first argument:
+
+
+<UL>
+<LI><CODE>"file"</CODE> Open a regular file for reading/writing.
+
+<LI><CODE>"truncate"</CODE> Open a regular file for reading/writing, but truncate
+
+it first.
+<LI><CODE>"append"</CODE> Open a regular file for reading/appending.
+
+<LI><CODE>"string"</CODE> Simulate a file with a string variable. In this case,
+
+the name is used as the initial contents of the buffer.
+(Note: "string" files are implemented as pipes internally.)
+</UL>
+
+This command return the file, or an empty list on error.
+
+<LI>
+
+<CODE>(file-read &#60;file&#62;)</CODE> Read the entire file given by the argument
+into a single string, and return the string. <EM>Warning:</EM> when reading
+the output of a pipeline, you may have to call this command several times.
+
+<LI>
+
+<CODE>(file-type &#60;string&#62;)</CODE> Return a string describing what type of file
+is named by the given string. If such a file does not exist, return an empty
+list. Otherwise, one of these strings is returned:
+
+
+<UL>
+<LI><CODE>"link"</CODE> File is a symbolic link.
+
+<LI><CODE>"regular"</CODE> File is a regular file.
+
+<LI><CODE>"directory"</CODE> File is a directory.
+
+<LI><CODE>"character"</CODE> File is a character device.
+
+<LI><CODE>"block"</CODE> File is a block device.
+
+<LI><CODE>"pipe"</CODE> File is a FIFO pipe.
+
+<LI><CODE>"socket"</CODE> File is a socket.
+
+</UL>
+
+<LI>
+
+<CODE>(file-write &#60;file&#62; &#60;string&#62;)</CODE> Write the second argument into the 
+first one.
+
+<LI>
+
+<CODE>(filter &#60;string&#62; &#60;list&#62;)</CODE> Apply the second argument to every character
+of the first argument. This command does not change the original string.
+
+
+<PRE>
+(filter "string with spaces" 
+        ~(if ~(= (top) ' ')
+             '_'
+             ~(top)))
+</PRE>
+
+returns "string_with_spaces".
+
+<LI>
+
+<CODE>(first &#60;list&#62;)</CODE> Equivalent to <CODE>car</CODE>.
+
+<LI>
+
+<CODE>(first-l ...)</CODE> Equivalent to <CODE>car-l</CODE>.
+
+<LI>
+
+<CODE>(gobble &#60;file&#62; &#60;list&#62;...)</CODE> Equivalent to <CODE>run</CODE>, except that the
+output of the pipeline will be returned, as a string.
+
+<LI>
+
+<CODE>(hash-get &#60;hash&#62; &#60;string&#62;)</CODE> Return the element in the given hash table
+corresponding to the given key.
+
+<LI>
+
+<CODE>(hash-keys &#60;hash&#62;)</CODE> Return all the keys in the given hash table.
+
+<LI>
+
+<CODE>(hash-make)</CODE> Return a new, empty hash table.
+
+<LI>
+
+<CODE>(hash-put &#60;hash&#62; &#60;string&#62; ...)</CODE> Associate the arguments after the
+second one with the given key in the given hash table.
+
+<LI>
+
+<CODE>(help)</CODE> Show version number and all builtin commands.
+
+<LI>
+
+<CODE>(interactive?)</CODE> Return <CODE>false</CODE> if the shell has <EM>not</EM> been
+started interactively.
+
+<LI>
+
+<CODE>(l-cdr &#60;list&#62;)</CODE> Equivalent to <CODE>(list (cdr ...))</CODE>.
+
+<LI>
+
+<CODE>(l-rest &#60;list&#62;)</CODE> Equivalent to <CODE>l-cdr</CODE>.
+
+<LI>
+
+<CODE>(l-stack)</CODE> Equivalent to <CODE>(list (stack))</CODE>.
+
+<LI>
+
+<CODE>(newline)</CODE> Return a newline character.
+
+<LI>
+
+<CODE>(nl)</CODE> Equivalent to <CODE>newline</CODE>.
+
+<LI>
+
+<CODE>(not &#60;bool&#62;)</CODE> Return <CODE>false</CODE> if the argument is <CODE>true</CODE>.
+
+<LI>
+
+<CODE>(not-null? &#60;any&#62;)</CODE> Return <CODE>false</CODE> if the argument is an empty list.
+
+<LI>
+
+<CODE>(null ...)</CODE> Return an empty list.
+
+<LI>
+
+<CODE>(null? &#60;any&#62;)</CODE> Return <CODE>true</CODE> if the argument is an empty list.
+
+<LI>
+
+<CODE>(match &#60;string&#62; &#60;string&#62;)</CODE> Return <CODE>true</CODE> if the second argument
+matches the first. The first argument is a regular expression.
+
+<LI>
+
+<CODE>(or ...)</CODE> Return <CODE>false</CODE> if all the argument evaluate to 
+<CODE>false</CODE>. As with the command <CODE>and</CODE>, this command is also 
+short-circuited. See the description of <CODE>and</CODE> for an explanation of why
+arguments must be quoted with a tilde.
+
+<LI>
+
+<CODE>(parse &#60;string&#62;)</CODE> Parse the given string as if it was typed into the 
+shell.
+
+<LI>
+
+<CODE>(pop)</CODE> Excise the top element from the stack, and return it.
+
+<LI>
+
+<CODE>(prompt ...)</CODE> Run the given arguments through <CODE>(squish (eval ...))</CODE>
+to produce the prompt. This command need only be run once.
+
+<LI>
+
+<CODE>(push &#60;any&#62;)</CODE> Push the argument onto the stack.
+
+<LI>
+
+<CODE>(read &#60;string&#62;)</CODE> Read a line of input from the user, using the given
+string as a prompt. Warning: this command only works if the shell is running
+interactively.
+
+<LI>
+
+<CODE>(repeat &#60;string&#62; ...)</CODE> Repeat the arguments after the first argument
+<CODE>n</CODE> number of times, where <CODE>n</CODE> is the numeric value of the first
+argument.
+
+<LI>
+
+<CODE>(rest &#60;list&#62;)</CODE> Equivalent to <CODE>cdr</CODE>.
+
+<LI>
+
+<CODE>(reverse ...)</CODE> Return the given arguments in reverse order.
+
+<LI>
+
+<CODE>(rot)</CODE> Switch the top and next-to-top elements of the stack, and return
+the element that just became the top one.
+
+<LI>
+
+<CODE>(script &#60;string&#62;)</CODE> Execute the given filename as a shell script.
+
+<LI>
+
+<CODE>(split &#60;string&#62;...)</CODE> Separate the given string into words. If there are
+more than one arguments given, then use the arguments after the first one as
+field separators. Otherwise, assume that fields are separated by whitespace.
+Note that splitting is more complex than you'd think at first glance --
+<CODE>(split ":.:.foo:.:bar.:baz." ":" ".")</CODE> => <CODE>foo bar baz</CODE>.
+In other words, extra field separators are ignored.
+
+<LI>
+
+<CODE>(squish ...)</CODE> Concatenate any string values into a single string. List
+structures will be ignored. For example: 
+<CODE>(squish ~(foo (bar (baz))))</CODE> => <CODE>foobarbaz</CODE>.
+
+<LI>
+
+<CODE>(stack)</CODE> Return all the stack elements, top one first.
+
+<LI>
+
+<CODE>(standard)</CODE> Return the standard input/output.
+
+<LI>
+
+<CODE>(stderr)</CODE> Return the standard input/error.
+
+<LI>
+
+<CODE>(stderr-handler &#60;file&#62;)</CODE> Define a standard error handler for
+all new subprocesses. This means that from now on, all executables run 
+from the shell will send their standard error to the given file.
+
+<LI>
+
+<CODE>(substring? &#60;string&#62; &#60;string&#62;)</CODE> Return <CODE>true</CODE> if the first argument
+is a substring of the second.
+
+<LI>
+
+<CODE>(top)</CODE> Return a copy of the top element of the stack.
+
+<LI>
+
+<CODE>(true ...)</CODE> Return <CODE>true</CODE>.
+
+<LI>
+
+<CODE>(typecheck &#60;string&#62; ...)</CODE> Make sure that the given arguments match the
+given type specification string. (see section <A HREF="esh.html#SEC14">3.5 Tutorial</A> for a description of this
+type specification string.)
+
+<LI>
+
+<CODE>(unlist &#60;list&#62;)</CODE> Return the elements of the given list.
+
+<LI>
+
+<CODE>(version)</CODE> Return the version of the shell, as three numbers.
+
+<LI>
+
+<CODE>(void ...)</CODE> Return nothing at all. Note: This is different from
+<CODE>null</CODE>! For example:
+
+
+<PRE>
+(if (null (magic-sequence))
+    ~(my-predicate)
+    true
+    false)
+</PRE>
+
+is an error, since in this case <CODE>if</CODE> is given four arguments.
+(<CODE>null</CODE> returns an empty list.)
+
+On the other hand,
+
+
+<PRE>
+(if (void (magic-sequence))
+    ~(my-predicate)
+    true
+    false)
+</PRE>
+
+is perfectly fine since <CODE>void</CODE> returns nothing at all whatsoever!
+
+<LI>
+
+<CODE>(while &#60;list&#62; &#60;list&#62; ...)</CODE> <CODE>eval</CODE> the second argument as long
+as the <CODE>eval</CODE> of the first argument is not <CODE>false</CODE>. The rest of
+the arguments are used as the stack for the duration of this command's 
+execution. <EM>Warning:</EM> this command is an efficiency hack. It saves the 
+waste of creating a huge return value which would be inherent in a recursive 
+command. Use <CODE>while</CODE> only if you don't care about the return value of
+the given commands.
+
+Example:
+
+
+<PRE>
+(define while-rec
+ ~(if ~(condition)
+      ~(begin (action)
+              (while-rec))
+      ()))
+</PRE>
+
+will return a value equivalent to <CODE>(action) (action) (action) ...</CODE>.
+This value could be a large memory and time waste. Therefore, when you are
+looping over large lists and you don't care about return values, use
+<CODE>while</CODE>.
+
+</UL>
+
+<P>
+<A NAME="IDX127"></A>
+<A NAME="IDX128"></A>
+<A NAME="IDX129"></A>
+<A NAME="IDX130"></A>
+<A NAME="IDX131"></A>
+<A NAME="IDX132"></A>
+<A NAME="IDX133"></A>
+<A NAME="IDX134"></A>
+<A NAME="IDX135"></A>
+
+
+<H2><A NAME="SEC14" HREF="esh_toc.html#TOC14">3.5 Tutorial</A></H2>
+
+<P>
+For starters, let us write a simple command to iterate through a list:
+
+
+
+<PRE>
+(define for-each
+        ~(if ~(not-null? (rot))
+             ~(begin ((rot) (rot))
+                     (for-each (cdr (list (stack)))))
+             ()))
+</PRE>
+
+<P>
+Using this command is simple:
+
+
+
+<PRE>
+(define starrify 
+        ~(squish '*' (top) '*'))
+
+(for-each starrify foo bar baz)
+</PRE>
+
+<P>
+results in <CODE>*foo* *bar* *baz*</CODE>.
+
+
+<P>
+Several notes to keep in mind: notice the tricky use of <CODE>rot</CODE> to
+shuffle stack elements. If you don't remember, <CODE>rot</CODE> switches the top
+and the next-to-top elements of the stack, and returns a copy of the element 
+that just became the top one.
+
+
+<P>
+Think of it as such: the first call to <CODE>rot</CODE> brings the second argument
+to the front and checks that the stack is not empty, at the same time.
+
+
+<P>
+The second call to <CODE>rot</CODE> returns the first argument, and the third
+call to <CODE>rot</CODE> returns the second element and undoes the previous call
+of <CODE>rot</CODE> at the same time. At this point, the second argument is still
+on top of the stack.
+
+
+<P>
+Finally, when <CODE>for-each</CODE> is recursively called, it is given only
+below the top stack element as arguments. Effectively, the second element
+was excised from the stack.
+
+
+<P>
+Also note that <CODE>((rot) (rot))</CODE> is calling a command, even though the
+name of the command is not explicit.
+
+
+<P>
+Now for another example. Suppose that you want to remind yourself which
+directory serves which purpose, and you'd like a descriptive string to
+be listed along with a directory name in the prompt. 
+(i.e. <CODE>[/home/ivan/src/xcf =&#62; Backup of GIMP artwork]$ </CODE>)
+
+
+
+<PRE>
+(prompt ~(push (get PWD))
+        ~(push (hash-get (dir-names) (top)))
+        "["
+        ~(rot)
+        ~(if ~(not-null? (rot))
+             ~(squish " =&#62; " (top))
+             "")
+        "]$ "
+        ~(null (pop))
+        ~(null (pop)))
+</PRE>
+
+<P>
+The meaning of <CODE>prompt</CODE> is simple -- whatever arguments are given to
+it are passed through <CODE>eval</CODE> and <CODE>squish</CODE> to become the string
+specifying the prompt. Again, as far as quoting is concerned, <CODE>prompt</CODE>
+is identical to <CODE>eval</CODE>.
+
+
+<P>
+Also, the command <CODE>null</CODE> simply returns an empty list.
+
+
+<P>
+To finish the job, you should insert the following code into your 
+<CODE>.eshrc</CODE>:
+
+
+
+<PRE>
+(define dir-names (hash-make))
+
+(hash-put (dir-names) "/home/ivan/src/xcf" "Backup of GIMP artwork")
+</PRE>
+
+<P>
+This is a simple script that illustrates simple file I/O:
+
+
+
+<PRE>
+(define prepend
+  ~(push (file-read (file-open file (pop))))
+  ~(push (squish (pop)
+                 (file-read (file-open file (top)))))
+  ~(file-write (file-open truncate (rot)) (rot)))
+</PRE>
+
+<P>
+A script such as this was used to append a header to every source code file
+in the <CODE>esh</CODE> distribution. Note the <CODE>typecheck</CODE> command; it is
+very useful for insuring the consistency of arguments to commands.
+
+
+<P>
+The only tricky part about using <CODE>typecheck</CODE> is the syntax of the
+first argument. Here is an explanation:
+
+
+
+<UL>
+<LI><CODE>s</CODE> Make sure that the next argument is a single string.
+
+<LI><CODE>l</CODE> Make sure that the next argument is a single list.
+
+<LI><CODE>h</CODE> Make sure that the next argument is a single hash table.
+
+<LI><CODE>b</CODE> Make sure that the next argument is a single boolean.
+
+<LI><CODE>f</CODE> Make sure that the next argument is a single file.
+
+<LI><CODE>p</CODE> Make sure that the next argument is a PID.
+
+<LI><CODE>S</CODE> Match any number of strings.
+
+<LI><CODE>L</CODE> Match any number of lists.
+
+<LI><CODE>H</CODE> Match any number of hash tables.
+
+<LI><CODE>B</CODE> Match any number of booleans.
+
+<LI><CODE>F</CODE> Match any number of files.
+
+<LI><CODE>P</CODE> Match any number of PID's.
+
+<LI><CODE>?</CODE> Match any one element.
+
+<LI><CODE>*</CODE> Match any number of any elements.
+
+<LI><CODE>(</CODE> Match a list only if the sublist passes typechecking on the
+
+               string after the parentheses.
+<LI><CODE>)</CODE> Match end-of-list.
+
+</UL>
+
+<P>
+For example, <CODE>"H(ss)s"</CODE> will match any list of arguments that begin
+with an arbitrary number of hash tables, followed by a list of two strings,
+and ends with a single string.
+
+
+<P>
+<A NAME="IDX136"></A>
+<A NAME="IDX137"></A>
+<A NAME="IDX138"></A>
+<A NAME="IDX139"></A>
+
+
+<H1><A NAME="SEC15" HREF="esh_toc.html#TOC15">4. Differences from Scheme</A></H1>
+
+<P>
+Note that in <CODE>esh</CODE> there is no numeric or "symbol" type -- all scalars are
+either strings, booleans, files, or process ID's. Most importantly, 
+there is no "procedure" type -- hence, no <CODE>lambda</CODE> command. From the point
+of view of the interpreter, a command and a list are indistinguishable.
+
+
+<P>
+Don't be mislead by the naming of <CODE>define</CODE> -- it is actually equivalent to
+a Lisp-like macro definition. 
+
+
+<P>
+Also, <CODE>car</CODE> and friends are more complicated because commands in 
+<CODE>esh</CODE>
+can return any number of arguments. This is why <CODE>(car (split "foo bar"))</CODE>
+doesn't work -- <CODE>car</CODE> expects a list, while <CODE>split</CODE> returns 
+an arbitrary number of elements. In a case like this, it is more convenient
+to write <CODE>(car-l (split "foo bar"))</CODE> instead, which is equivalent
+to <CODE>(car (list (split "foo bar")))</CODE>.
+
+
+<P>
+<A NAME="IDX140"></A>
+<A NAME="IDX141"></A>
+<A NAME="IDX142"></A>
+<A NAME="IDX143"></A>
+<A NAME="IDX144"></A>
+<A NAME="IDX145"></A>
+
+
+<H1><A NAME="SEC16" HREF="esh_toc.html#TOC16">5. Differences from sh</A></H1>
+
+<P>
+The most obvious difference is the syntax -- other shells normally don't
+make much of a distinction between commands from a disk executable and
+the shell interpreter's builtin commands. Not so in <CODE>esh</CODE>. 
+While other shell normally operate by complicated string substitution
+and matching rules, <CODE>esh</CODE> mainly uses command definitions and 
+recursion. In that sense, it is more similar to a "real" programming 
+language. <CODE>esh</CODE> also supports more complicated data structures --
+lists and hash tables, for example. However, string operations are
+lacking in comparison to other shells. 
+
+
+<P>
+<CODE>esh</CODE> is also more verbose and formal, though this could be beneficial 
+when you're trying to compose large libraries of useful routines.
+(It's possible to write shell "modes", much as in <CODE>emacs</CODE>, when using
+<CODE>esh</CODE>.)
+
+
+<P>
+<CODE>esh</CODE> has a more generalized support for files. Instead of limiting
+file I/O to redirection only, the same commands can be used either on pipes
+or on files directly. (e.g. in the future, it may be possible to use a 
+network socket as the output of a pipeline.)
+
+
+<P>
+Also, traditional shells have "exported" and "non-exported" environment
+variables, whereas in <CODE>esh</CODE> all variables are exported. That is,
+there's no <CODE>setenv</CODE> command, there's just <CODE>set</CODE>.
+
+
+
+
+<H1><A NAME="SEC17" HREF="esh_toc.html#TOC17">Command Index</A></H1>
+
+<P>
+Jump to:
+<A HREF="#findex_*">*</A>
+-
+<A HREF="#findex_+">+</A>
+-
+<A HREF="#findex_-">-</A>
+-
+<A HREF="#findex_/">/</A>
+-
+<A HREF="#findex_=">=</A>
+-
+<A HREF="#findex_a">a</A>
+-
+<A HREF="#findex_b">b</A>
+-
+<A HREF="#findex_c">c</A>
+-
+<A HREF="#findex_d">d</A>
+-
+<A HREF="#findex_e">e</A>
+-
+<A HREF="#findex_f">f</A>
+-
+<A HREF="#findex_g">g</A>
+-
+<A HREF="#findex_h">h</A>
+-
+<A HREF="#findex_i">i</A>
+-
+<A HREF="#findex_j">j</A>
+-
+<A HREF="#findex_l">l</A>
+-
+<A HREF="#findex_m">m</A>
+-
+<A HREF="#findex_n">n</A>
+-
+<A HREF="#findex_o">o</A>
+-
+<A HREF="#findex_p">p</A>
+-
+<A HREF="#findex_r">r</A>
+-
+<A HREF="#findex_s">s</A>
+-
+<A HREF="#findex_t">t</A>
+-
+<A HREF="#findex_u">u</A>
+-
+<A HREF="#findex_v">v</A>
+-
+<A HREF="#findex_w">w</A>
+<P>
+<H2><A NAME="findex_*">*</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX38">*</A>
+</DIR>
+<H2><A NAME="findex_+">+</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX36">+</A>
+</DIR>
+<H2><A NAME="findex_-">-</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX37">-</A>
+</DIR>
+<H2><A NAME="findex_/">/</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX39">/</A>
+</DIR>
+<H2><A NAME="findex_=">=</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX43">=</A>
+</DIR>
+<H2><A NAME="findex_a">a</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX61">alias</A>
+<LI><A HREF="esh.html#IDX62">alias-hash</A>
+<LI><A HREF="esh.html#IDX63">alive?</A>
+<LI><A HREF="esh.html#IDX64">and</A>
+</DIR>
+<H2><A NAME="findex_b">b</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX65">begin</A>
+<LI><A HREF="esh.html#IDX66">begin-last</A>
+<LI><A HREF="esh.html#IDX29">bg</A>
+</DIR>
+<H2><A NAME="findex_c">c</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX67">car</A>
+<LI><A HREF="esh.html#IDX68">car-l</A>
+<LI><A HREF="esh.html#IDX27">cd</A>
+<LI><A HREF="esh.html#IDX69">cdr</A>
+<LI><A HREF="esh.html#IDX70">chars</A>
+<LI><A HREF="esh.html#IDX71">chop!</A>
+<LI><A HREF="esh.html#IDX72">chop-nl!</A>
+<LI><A HREF="esh.html#IDX73">clone</A>
+<LI><A HREF="esh.html#IDX74">copy</A>
+</DIR>
+<H2><A NAME="findex_d">d</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX75">define</A>
+<LI><A HREF="esh.html#IDX76">defined?</A>
+</DIR>
+<H2><A NAME="findex_e">e</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX34">env</A>
+<LI><A HREF="esh.html#IDX42">eval</A>
+<LI><A HREF="esh.html#IDX77">exec</A>
+<LI><A HREF="esh.html#IDX78">exit</A>
+</DIR>
+<H2><A NAME="findex_f">f</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX79">false</A>
+<LI><A HREF="esh.html#IDX28">fg</A>
+<LI><A HREF="esh.html#IDX80">file-open</A>
+<LI><A HREF="esh.html#IDX81">file-read</A>, <A HREF="esh.html#IDX134">file-read</A>
+<LI><A HREF="esh.html#IDX82">file-type</A>
+<LI><A HREF="esh.html#IDX83">file-write</A>, <A HREF="esh.html#IDX135">file-write</A>
+<LI><A HREF="esh.html#IDX84">filter</A>
+<LI><A HREF="esh.html#IDX85">first</A>
+<LI><A HREF="esh.html#IDX86">first-l</A>
+<LI><A HREF="esh.html#IDX133">for-each</A>
+</DIR>
+<H2><A NAME="findex_g">g</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX32">get</A>
+<LI><A HREF="esh.html#IDX87">gobble</A>
+</DIR>
+<H2><A NAME="findex_h">h</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX88">hash-get</A>
+<LI><A HREF="esh.html#IDX89">hash-keys</A>
+<LI><A HREF="esh.html#IDX90">hash-make</A>
+<LI><A HREF="esh.html#IDX91">hash-put</A>
+<LI><A HREF="esh.html#IDX92">help</A>
+</DIR>
+<H2><A NAME="findex_i">i</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX40">if</A>
+<LI><A HREF="esh.html#IDX93">interactive?</A>
+</DIR>
+<H2><A NAME="findex_j">j</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX26">jobs</A>
+</DIR>
+<H2><A NAME="findex_l">l</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX94">l-stack</A>
+<LI><A HREF="esh.html#IDX41">list</A>
+</DIR>
+<H2><A NAME="findex_m">m</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX101">match</A>
+</DIR>
+<H2><A NAME="findex_n">n</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX95">newline</A>
+<LI><A HREF="esh.html#IDX98">nl</A>
+<LI><A HREF="esh.html#IDX96">not</A>
+<LI><A HREF="esh.html#IDX97">not-null?</A>
+<LI><A HREF="esh.html#IDX99">null</A>
+<LI><A HREF="esh.html#IDX100">null?</A>
+</DIR>
+<H2><A NAME="findex_o">o</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX102">or</A>
+</DIR>
+<H2><A NAME="findex_p">p</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX103">parse</A>
+<LI><A HREF="esh.html#IDX104">pop</A>
+<LI><A HREF="esh.html#IDX35">print</A>
+<LI><A HREF="esh.html#IDX105">prompt</A>, <A HREF="esh.html#IDX132">prompt</A>
+<LI><A HREF="esh.html#IDX106">push</A>
+</DIR>
+<H2><A NAME="findex_r">r</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX107">read</A>
+<LI><A HREF="esh.html#IDX108">repeat</A>
+<LI><A HREF="esh.html#IDX109">rest</A>
+<LI><A HREF="esh.html#IDX110">reverse</A>
+<LI><A HREF="esh.html#IDX111">rot</A>
+<LI><A HREF="esh.html#IDX30">run</A>
+<LI><A HREF="esh.html#IDX31">run-simple</A>
+</DIR>
+<H2><A NAME="findex_s">s</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX112">script</A>
+<LI><A HREF="esh.html#IDX33">set</A>
+<LI><A HREF="esh.html#IDX113">split</A>
+<LI><A HREF="esh.html#IDX114">squish</A>
+<LI><A HREF="esh.html#IDX115">stack</A>
+<LI><A HREF="esh.html#IDX116">standard</A>
+<LI><A HREF="esh.html#IDX117">stderr</A>
+<LI><A HREF="esh.html#IDX118">stderr-handler</A>
+<LI><A HREF="esh.html#IDX119">substring?</A>
+</DIR>
+<H2><A NAME="findex_t">t</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX120">top</A>
+<LI><A HREF="esh.html#IDX121">true</A>
+<LI><A HREF="esh.html#IDX122">typecheck</A>, <A HREF="esh.html#IDX131">typecheck</A>
+</DIR>
+<H2><A NAME="findex_u">u</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX123">unlist</A>
+</DIR>
+<H2><A NAME="findex_v">v</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX124">version</A>
+<LI><A HREF="esh.html#IDX125">void</A>
+</DIR>
+<H2><A NAME="findex_w">w</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX126">while</A>
+</DIR>
+
+
+
+
+<H1><A NAME="SEC18" HREF="esh_toc.html#TOC18">Concept Index</A></H1>
+
+<P>
+Jump to:
+<A HREF="#cindex_.">.</A>
+-
+<A HREF="#cindex_a">a</A>
+-
+<A HREF="#cindex_b">b</A>
+-
+<A HREF="#cindex_c">c</A>
+-
+<A HREF="#cindex_d">d</A>
+-
+<A HREF="#cindex_e">e</A>
+-
+<A HREF="#cindex_f">f</A>
+-
+<A HREF="#cindex_g">g</A>
+-
+<A HREF="#cindex_i">i</A>
+-
+<A HREF="#cindex_j">j</A>
+-
+<A HREF="#cindex_l">l</A>
+-
+<A HREF="#cindex_n">n</A>
+-
+<A HREF="#cindex_o">o</A>
+-
+<A HREF="#cindex_p">p</A>
+-
+<A HREF="#cindex_q">q</A>
+-
+<A HREF="#cindex_r">r</A>
+-
+<A HREF="#cindex_s">s</A>
+-
+<A HREF="#cindex_t">t</A>
+-
+<A HREF="#cindex_v">v</A>
+<P>
+<H2><A NAME="cindex_.">.</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX8">.eshrc</A>
+</DIR>
+<H2><A NAME="cindex_a">a</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX54">Arguments, to commands</A>
+</DIR>
+<H2><A NAME="cindex_b">b</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX21">Background</A>
+<LI><A HREF="esh.html#IDX142">bash</A>
+<LI><A HREF="esh.html#IDX24">Basic commands</A>
+<LI><A HREF="esh.html#IDX16">Basics of shell programming</A>
+<LI><A HREF="esh.html#IDX25">Builtin command list, basic</A>
+<LI><A HREF="esh.html#IDX60">Builtin command list, detailed</A>
+</DIR>
+<H2><A NAME="cindex_c">c</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX57">Code-as-data</A>
+<LI><A HREF="esh.html#IDX6">Command line parameters</A>
+<LI><A HREF="esh.html#IDX23">Command list</A>, <A HREF="esh.html#IDX59">Command list</A>
+<LI><A HREF="esh.html#IDX48">Commands</A>
+<LI><A HREF="esh.html#IDX50">Control structures</A>
+<LI><A HREF="esh.html#IDX143">csh</A>
+</DIR>
+<H2><A NAME="cindex_d">d</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX44">Details</A>
+<LI><A HREF="esh.html#IDX139">Differences</A>, <A HREF="esh.html#IDX141">Differences</A>
+<LI><A HREF="esh.html#IDX136">Differences from Scheme</A>
+<LI><A HREF="esh.html#IDX140">Differences from sh</A>
+</DIR>
+<H2><A NAME="cindex_e">e</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX9">eshrc</A>
+<LI><A HREF="esh.html#IDX56"><CODE>eval</CODE>, quoting for</A>
+<LI><A HREF="esh.html#IDX128">Examples</A>
+<LI><A HREF="esh.html#IDX12">Executing files</A>
+</DIR>
+<H2><A NAME="cindex_f">f</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX18">Files, as shell scripts</A>
+<LI><A HREF="esh.html#IDX20">Foreground</A>
+</DIR>
+<H2><A NAME="cindex_g">g</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX4">Getting started</A>
+</DIR>
+<H2><A NAME="cindex_i">i</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX10">Interaction</A>
+<LI><A HREF="esh.html#IDX3">Introduction</A>
+</DIR>
+<H2><A NAME="cindex_j">j</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX19">Job control</A>
+</DIR>
+<H2><A NAME="cindex_l">l</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX7">Launching <CODE>esh</CODE></A>
+<LI><A HREF="esh.html#IDX138">Lisp</A>
+<LI><A HREF="esh.html#IDX51">Loops</A>
+</DIR>
+<H2><A NAME="cindex_n">n</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX17">Non-interactive</A>
+</DIR>
+<H2><A NAME="cindex_o">o</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX2">Overview</A>
+</DIR>
+<H2><A NAME="cindex_p">p</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX13">Pipes and redirection</A>
+<LI><A HREF="esh.html#IDX45">Programmer's Manual</A>
+</DIR>
+<H2><A NAME="cindex_q">q</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX55">Quoting</A>
+</DIR>
+<H2><A NAME="cindex_r">r</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX1">Rationale</A>
+<LI><A HREF="esh.html#IDX49">Recursion</A>
+<LI><A HREF="esh.html#IDX11">Running commands</A>
+</DIR>
+<H2><A NAME="cindex_s">s</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX129">Sample code</A>
+<LI><A HREF="esh.html#IDX137">Scheme</A>
+<LI><A HREF="esh.html#IDX144">sh</A>
+<LI><A HREF="esh.html#IDX14">Simple programming</A>
+<LI><A HREF="esh.html#IDX53">Stack, local variable</A>
+<LI><A HREF="esh.html#IDX5">Starting <CODE>esh</CODE></A>
+<LI><A HREF="esh.html#IDX22">Stopping jobs</A>
+<LI><A HREF="esh.html#IDX47">Syntax</A>
+<LI><A HREF="esh.html#IDX15">Syntax, basic</A>
+</DIR>
+<H2><A NAME="cindex_t">t</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX145">tcsh</A>
+<LI><A HREF="esh.html#IDX58">Tilde, as a quote character</A>
+<LI><A HREF="esh.html#IDX46">Tutorial</A>, <A HREF="esh.html#IDX127">Tutorial</A>
+<LI><A HREF="esh.html#IDX130">Typechecking</A>
+</DIR>
+<H2><A NAME="cindex_v">v</A></H2>
+<DIR>
+<LI><A HREF="esh.html#IDX52">Variables</A>
+</DIR>
+
+
+<P><HR><P>
+This document was generated on 7 January 2000 using
+<A HREF="http://wwwinfo.cern.ch/dis/texi2html/">texi2html</A>&nbsp;1.56k.
+</BODY>
+</HTML>

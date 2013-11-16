@@ -1,0 +1,47 @@
+esh (0.8-5) unstable; urgency=low
+
+  * Added Build-Depends for tetex-bin and libreadline4-dev (>= 2.1-12), spotted 
+    by Roman Hodek <Roman.Hodek@informatik.uni-erlangen.de>, using the
+    autobuilder. Closes: #54599
+
+ -- Edward Betts <edward@debian.org>  Mon, 10 Jan 2000 18:14:25 +0000
+
+esh (0.8-4) unstable; urgency=low
+
+  * debian/control: updated Standards-Version to 3.1.1
+  * debian/control: added Build-Depends.
+  * debian/rules: rewritten.
+
+ -- Edward Betts <edward@debian.org>  Thu,  6 Jan 2000 22:17:28 +0000
+
+esh (0.8-3) unstable; urgency=low
+
+  * Update debian/doc-base for /usr/share/doc; fixes Bug#45185
+  * Fix problem with esh.info
+
+ -- Edward Betts <edward@debian.org>  Thu, 16 Sep 1999 20:14:28 +0100
+
+esh (0.8-2) unstable; urgency=low
+
+  * Changed to Debhelper 2.0
+  * Added -O2 to CFLAGS
+  * Updated to Standards-Version: 3.0.1
+  * Lintian clean
+  * Changed location of GPL to /usr/share/common-licenses/GPL
+
+ -- Edward Betts <edward@debian.org>  Sun, 12 Sep 1999 21:38:32 +0100
+
+esh (0.8-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Edward Betts <edward@debian.org>  Sun,  9 May 1999 01:59:49 +0100
+
+esh (0.7-1) unstable; urgency=low
+
+  * Initial Release.
+  * Wrote a man page.
+  * Disabled debuging in Makefile.
+  * Registered with doc-base.
+
+ -- Edward Betts <edward@debian.org>  Fri, 26 Feb 1999 07:48:30 +0000

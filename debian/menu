@@ -1,0 +1,2 @@
+?package(esh):needs=text section=Apps/Shells\
+  title="esh" command="/usr/bin/esh"

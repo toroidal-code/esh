@@ -1,0 +1,16 @@
+Source: esh
+Section: shells
+Priority: optional
+Maintainer: Edward Betts <edward@debian.org>
+Standards-Version: 3.1.1
+Build-Depends: debhelper, tetex-bin, libreadline4-dev (>= 2.1-12)
+
+Package: esh
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: the easy shell
+ esh was primarily written out of a need for a simple and lightweight shell
+ for Unix. As such, it deviates completely from all of the traditional
+ shells, opting instead for a Lisp-like syntax. This allows exceptionally 
+ small size, both in terms of lines of code and memory consumption, while
+ retaining remarkable flexibility and programmability.
